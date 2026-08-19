@@ -104,13 +104,13 @@ st.subheader("1. Identificação do Cliente")
 col_c1, col_c2, col_c3 = st.columns(3)
 
 with col_c1:
-    cod_cliente = st.text_input("Código do Cliente", placeholder="Ex: 87.653", key=f"input_cod_{rc}")
-    contato = st.text_input("Contato", placeholder="Ex: Nilton", key=f"input_contato_{rc}")
+    cod_cliente = st.text_input("Código do Cliente *", placeholder="Ex: 87.653", key=f"input_cod_{rc}")
+    contato = st.text_input("Contato *", placeholder="Ex: Nilton", key=f"input_contato_{rc}")
 with col_c2:
-    nome_cliente = st.text_input("Nome / Razão Social", placeholder="Ex: SABOR DA TERRA", key=f"input_nome_{rc}")
-    departamento = st.text_input("Sobrenome ou Departamento", placeholder="Ex: Gerente", key=f"input_depto_{rc}")
+    nome_cliente = st.text_input("Nome / Razão Social *", placeholder="Ex: SABOR DA TERRA", key=f"input_nome_{rc}")
+    departamento = st.text_input("Sobrenome ou Departamento *", placeholder="Ex: Gerente", key=f"input_depto_{rc}")
 with col_c3:
-    telefone = st.text_input("Telefone", placeholder="Ex: 12-992586760", key=f"input_tel_{rc}")
+    telefone = st.text_input("Telefone *", placeholder="Ex: 12-992586760", key=f"input_tel_{rc}")
 
 st.divider()
 
@@ -120,19 +120,19 @@ st.subheader("2. Informações Contratuais")
 col_ic1, col_ic2 = st.columns(2)
 
 with col_ic1:
-    eq_contrato = st.selectbox("Equipamentos de acordo com contrato?", ["Sim", "Não"], key=f"eq_contrato_{rc}")
-    desc_eq_contrato = st.text_input("Quais equipamentos disponíveis?", placeholder="Ex: 01 B190 + 01 CC...", key=f"desc_eq_contrato_{rc}")
-    consumo_previsto = st.text_input("Consumo Previsto (kg)", placeholder="Ex: 250", key=f"cons_prev_{rc}")
-    possui_art = st.selectbox("Possui ART?", ["Sim", "Não"], key=f"possui_art_{rc}")
-    central_norma = st.selectbox("Central dentro de norma?", ["Sim", "Não"], key=f"central_norma_{rc}")
+    eq_contrato = st.selectbox("Equipamentos de acordo com contrato? *", ["Sim", "Não"], key=f"eq_contrato_{rc}")
+    desc_eq_contrato = st.text_input("Quais equipamentos disponíveis? *", placeholder="Ex: 01 B190 + 01 CC...", key=f"desc_eq_contrato_{rc}")
+    consumo_previsto = st.text_input("Consumo Previsto (kg) *", placeholder="Ex: 250", key=f"cons_prev_{rc}")
+    possui_art = st.selectbox("Possui ART? *", ["Sim", "Não"], key=f"possui_art_{rc}")
+    central_norma = st.selectbox("Central dentro de norma? *", ["Sim", "Não"], key=f"central_norma_{rc}")
 
 with col_ic2:
-    freq_cadastrada = st.text_input("Frequência Cadastrada", placeholder="Ex: QUINZENAL", key=f"freq_cad_{rc}")
-    consumo_real = st.text_input("Consumo Real/Médio (kg)", placeholder="Ex: 137", key=f"cons_real_{rc}")
+    freq_cadastrada = st.text_input("Frequência Cadastrada *", placeholder="Ex: QUINZENAL", key=f"freq_cad_{rc}")
+    consumo_real = st.text_input("Consumo Real/Médio (kg) *", placeholder="Ex: 137", key=f"cons_real_{rc}")
     st.write(" ")
     st.write(" ")
     num_art = st.text_input("Número da ART (se possuir)", placeholder="Ex: 2620261267273002...", key=f"num_art_{rc}")
-    possui_debitos = st.selectbox("Cliente possui débitos?", ["Sim", "Não"], key=f"possui_debitos_{rc}")
+    possui_debitos = st.selectbox("Cliente possui débitos? *", ["Sim", "Não"], key=f"possui_debitos_{rc}")
 
 st.divider()
 
@@ -200,11 +200,11 @@ st.subheader("4. Novos Negócios / Satisfação")
 col_nn1, col_nn2 = st.columns(2)
 
 with col_nn1:
-    indica_negocios = st.selectbox("Indicou novos negócios?", ["Sim", "Não"], key=f"indica_negocios_{rc}")
+    indica_negocios = st.selectbox("Indicou novos negócios? *", ["Sim", "Não"], key=f"indica_negocios_{rc}")
     desc_negocios = st.text_input("Detalhes da indicação", placeholder="Ex: Vizinho quer instalar gás", key=f"desc_negocios_{rc}")
 
 with col_nn2:
-    cliente_satisfeito = st.selectbox("Cliente está satisfeito com a Consigaz?", ["Sim", "Não"], key=f"cliente_satisfeito_{rc}")
+    cliente_satisfeito = st.selectbox("Cliente está satisfeito com a Consigaz? *", ["Sim", "Não"], key=f"cliente_satisfeito_{rc}")
     desc_satisfacao = st.text_input("Motivo ou observação da satisfação", placeholder="Ex: Bom atendimento", key=f"desc_satisfacao_{rc}")
 
 st.divider()
@@ -239,6 +239,26 @@ st.divider()
 
 
 # --- SEÇÃO 7: AÇÕES E GERAÇÃO DE RELATÓRIO ---
+# Função de Validação de Campos Obrigatórios
+def validar_campos_obrigatorios():
+    campos_faltantes = []
+    
+    # Validações Seção 1
+    if not cod_cliente.strip(): campos_faltantes.append("Código do Cliente")
+    if not contato.strip(): campos_faltantes.append("Contato")
+    if not nome_cliente.strip(): campos_faltantes.append("Nome / Razão Social")
+    if not departamento.strip(): campos_faltantes.append("Sobrenome ou Departamento")
+    if not telefone.strip(): campos_faltantes.append("Telefone")
+    
+    # Validações Seção 2
+    if not desc_eq_contrato.strip(): campos_faltantes.append("Quais equipamentos disponíveis (Contrato)")
+    if not consumo_previsto.strip(): campos_faltantes.append("Consumo Previsto")
+    if not freq_cadastrada.strip(): campos_faltantes.append("Frequência Cadastrada")
+    if not consumo_real.strip(): campos_faltantes.append("Consumo Real/Médio")
+    if possui_art == "Sim" and not num_art.strip(): campos_faltantes.append("Número da ART (Pois marcou que possui)")
+    
+    return campos_faltantes
+
 class RelatorioPDF(FPDF):
     def __init__(self, cod_cliente="", nome_cliente=""):
         super().__init__()
@@ -273,7 +293,7 @@ def gerar_pdf(equipamentos, dic_fotos, cod_cliente, nome_cliente):
     pdf.set_margins(10, 35, 10)
     pdf.set_auto_page_break(auto=True, margin=20)
 
-    # Renderiza as Fotos
+    # Renderiza as Fotos com Cálculo Inteligente de Proporção
     for categoria, arquivos in dic_fotos.items():
         if arquivos:
             pdf.add_page()
@@ -290,10 +310,30 @@ def gerar_pdf(equipamentos, dic_fotos, cod_cliente, nome_cliente):
                     temp_path = f"temp_{categoria}_{idx}.jpg"
                     img.save(temp_path)
                     
-                    # CORREÇÃO APLICADA AQUI: Substituído x="C" por x=40 
-                    # 40 é a margem centralizada exata para uma imagem w=130 em folha A4 (210mm)
-                    pdf.image(temp_path, x=40, w=130)
-                    pdf.ln(3)
+                    # Identifica largura e altura originais
+                    img_w_px, img_h_px = img.size
+                    proporcao = img_h_px / img_w_px
+                    
+                    # Tenta forçar a largura para 130mm
+                    w_alvo = 130
+                    h_alvo = w_alvo * proporcao
+                    
+                    # Se a foto for muito vertical (alta demais), reduzimos a altura para 110mm
+                    if h_alvo > 110:
+                        h_alvo = 110
+                        w_alvo = h_alvo / proporcao
+                    
+                    # Calcula o centro exato matematicamente (A4 tem 210mm de largura)
+                    pos_x_centro = (210 - w_alvo) / 2
+                    
+                    # Evita que a foto corte no final da página (A4 tem 297mm de altura)
+                    if pdf.get_y() + h_alvo > 270:
+                        pdf.add_page()
+                    
+                    pdf.image(temp_path, x=pos_x_centro, y=pdf.get_y(), w=w_alvo, h=h_alvo)
+                    
+                    # Desloca o cursor Y para baixo da imagem criada + um respiro
+                    pdf.set_y(pdf.get_y() + h_alvo + 5)
                     
                     if os.path.exists(temp_path):
                         os.remove(temp_path)
@@ -343,66 +383,76 @@ col_btn1, col_btn2 = st.columns(2)
 
 with col_btn1:
     if st.button("📄 Gerar Relatório PDF"):
-        dicionario_fotos = {
-            "FACHADA": fotos_fachada,
-            "ABRIGO": fotos_abrigo,
-            "CENTRAL": fotos_central,
-            "CILINDROS": fotos_cilindros,
-            "EQUIPAMENTOS": fotos_equipamentos
-        }
+        erros_pdf = validar_campos_obrigatorios()
         
-        pdf_out = gerar_pdf(
-            st.session_state.equipamentos,
-            dicionario_fotos,
-            cod_cliente,
-            nome_cliente
-        )
-        
-        cod_formatado = cod_cliente.replace(".", "").strip().upper() if cod_cliente else ""
-        nome_arquivo_pdf = f"fotos_{cod_formatado}.pdf" if cod_formatado else "fotos.pdf"
+        if erros_pdf:
+            st.error(f"⚠️ **Preencha os campos obrigatórios antes de gerar:**\n\n" + "\n".join([f"- {erro}" for erro in erros_pdf]))
+        else:
+            dicionario_fotos = {
+                "FACHADA": fotos_fachada,
+                "ABRIGO": fotos_abrigo,
+                "CENTRAL": fotos_central,
+                "CILINDROS": fotos_cilindros,
+                "EQUIPAMENTOS": fotos_equipamentos
+            }
+            
+            pdf_out = gerar_pdf(
+                st.session_state.equipamentos,
+                dicionario_fotos,
+                cod_cliente,
+                nome_cliente
+            )
+            
+            cod_formatado = cod_cliente.replace(".", "").strip().upper() if cod_cliente else ""
+            nome_arquivo_pdf = f"fotos_{cod_formatado}.pdf" if cod_formatado else "fotos.pdf"
 
-        st.success("✅ Relatório PDF gerado com sucesso!")
-        st.download_button(
-            label="📥 Baixar Relatório (PDF)",
-            data=pdf_out,
-            file_name=nome_arquivo_pdf,
-            mime="application/pdf"
-        )
+            st.success("✅ Relatório PDF gerado com sucesso!")
+            st.download_button(
+                label="📥 Baixar Relatório (PDF)",
+                data=pdf_out,
+                file_name=nome_arquivo_pdf,
+                mime="application/pdf"
+            )
 
 with col_btn2:
     if st.button("📝 Gerar Texto para Sistema"):
-        # Lógica para exibição do ART
-        if possui_art == "Sim":
-            linha_art = f"(x) Sim ( ) Não {num_art}".strip()
+        erros_texto = validar_campos_obrigatorios()
+        
+        if erros_texto:
+            st.error(f"⚠️ **Preencha os campos obrigatórios antes de gerar:**\n\n" + "\n".join([f"- {erro}" for erro in erros_texto]))
         else:
-            linha_art = "( ) Sim (x) Não"
-            
-        # Lógica de Equipamentos Contrato
-        texto_eq_contrato = f"{eq_contrato}. {desc_eq_contrato.strip()}".strip() if desc_eq_contrato.strip() else eq_contrato
-            
-        # Lógica para Novos Negócios
-        texto_negocios = indica_negocios
-        if indica_negocios == "Sim" and desc_negocios.strip():
-            texto_negocios += f" - {desc_negocios.strip()}"
-            
-        # Lógica para Satisfação
-        texto_satisfacao = cliente_satisfeito
-        if desc_satisfacao.strip():
-            texto_satisfacao += f", {desc_satisfacao.strip()}"
-            
-        # Equipamentos Formatados
-        lista_eq_formatada = ""
-        if st.session_state.equipamentos:
-            for eq in st.session_state.equipamentos:
-                lista_eq_formatada += f"{eq['texto']}\n\n"
-        else:
-            lista_eq_formatada = "Nenhum equipamento cadastrado.\n\n"
-            
-        # Vazão
-        vazao_total_str = f"{total_vazao:.2f}".replace(".", ",").rstrip("0").rstrip(",") if total_vazao > 0 else "0"
+            # Lógica para exibição do ART
+            if possui_art == "Sim":
+                linha_art = f"(x) Sim ( ) Não {num_art}".strip()
+            else:
+                linha_art = "( ) Sim (x) Não"
+                
+            # Lógica de Equipamentos Contrato
+            texto_eq_contrato = f"{eq_contrato}. {desc_eq_contrato.strip()}".strip() if desc_eq_contrato.strip() else eq_contrato
+                
+            # Lógica para Novos Negócios
+            texto_negocios = indica_negocios
+            if indica_negocios == "Sim" and desc_negocios.strip():
+                texto_negocios += f" - {desc_negocios.strip()}"
+                
+            # Lógica para Satisfação
+            texto_satisfacao = cliente_satisfeito
+            if desc_satisfacao.strip():
+                texto_satisfacao += f", {desc_satisfacao.strip()}"
+                
+            # Equipamentos Formatados
+            lista_eq_formatada = ""
+            if st.session_state.equipamentos:
+                for eq in st.session_state.equipamentos:
+                    lista_eq_formatada += f"{eq['texto']}\n\n"
+            else:
+                lista_eq_formatada = "Nenhum equipamento cadastrado.\n\n"
+                
+            # Vazão
+            vazao_total_str = f"{total_vazao:.2f}".replace(".", ",").rstrip("0").rstrip(",") if total_vazao > 0 else "0"
 
-        # Montagem do Texto Final
-        texto_final = f"""Contato: {contato}
+            # Montagem do Texto Final
+            texto_final = f"""Contato: {contato}
 Sobrenome ou departamento: {departamento}
 Telefone: {telefone}
 
@@ -422,5 +472,5 @@ Cliente está satisfeito com o atendimento da Consigaz? {texto_satisfacao}
 
 Obs.: {observacoes}
 """
-        st.success("✅ Texto gerado com sucesso!")
-        st.text_area("Copie o texto abaixo para colar no sistema:", value=texto_final, height=450)
+            st.success("✅ Texto gerado com sucesso!")
+            st.text_area("Copie o texto abaixo para colar no sistema:", value=texto_final, height=450)
