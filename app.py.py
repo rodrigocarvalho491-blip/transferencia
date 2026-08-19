@@ -133,6 +133,11 @@ with col_ic2:
     st.write(" ")
     num_art = st.text_input("Número da ART (se possuir)", placeholder="Ex: 2620261267273002...", key=f"num_art_{rc}")
     possui_debitos = st.selectbox("Cliente possui débitos? *", ["Sim", "Não"], key=f"possui_debitos_{rc}")
+    
+    # Campo condicional para débitos
+    desc_debitos = ""
+    if possui_debitos == "Sim":
+        desc_debitos = st.text_input("Detalhes dos Débitos *", placeholder="Ex: Fatura vencida de R$...", key=f"desc_debitos_{rc}")
 
 st.divider()
 
@@ -255,6 +260,7 @@ def validar_campos_obrigatorios():
     if not freq_cadastrada.strip(): campos_faltantes.append("Frequência Cadastrada")
     if not consumo_real.strip(): campos_faltantes.append("Consumo Real/Médio")
     if possui_art == "Sim" and not num_art.strip(): campos_faltantes.append("Número da ART (Pois marcou que possui)")
+    if possui_debitos == "Sim" and not desc_debitos.strip(): campos_faltantes.append("Detalhes dos Débitos (Pois marcou que possui)")
     
     return campos_faltantes
 
@@ -420,6 +426,11 @@ with col_btn2:
                 
             texto_eq_contrato = f"{eq_contrato}. {desc_eq_contrato.strip()}".strip() if desc_eq_contrato.strip() else eq_contrato
                 
+            # Lógica para Débitos
+            texto_debitos = possui_debitos
+            if possui_debitos == "Sim" and desc_debitos.strip():
+                texto_debitos += f" - {desc_debitos.strip()}"
+
             texto_negocios = indica_negocios
             if indica_negocios == "Sim" and desc_negocios.strip():
                 texto_negocios += f" - {desc_negocios.strip()}"
@@ -431,9 +442,9 @@ with col_btn2:
             lista_eq_formatada = ""
             if st.session_state.equipamentos:
                 for eq in st.session_state.equipamentos:
-                    lista_eq_formatada += f"{eq['texto']}\n\n"
+                    lista_eq_formatada += f"{eq['texto']}\n"
             else:
-                lista_eq_formatada = "Nenhum equipamento cadastrado.\n\n"
+                lista_eq_formatada = "Nenhum equipamento cadastrado.\n"
                 
             vazao_total_str = f"{total_vazao:.2f}".replace(".", ",").rstrip("0").rstrip(",") if total_vazao > 0 else "0"
 
@@ -452,7 +463,7 @@ Quais equipamentos disponíveis no cliente?
 {lista_eq_formatada}VAZÃO TOTAL: {vazao_total_str} kg/h
 
 Indicação de novos negócios do cliente: {texto_negocios}
-Cliente possui débitos? {possui_debitos}
+Cliente possui débitos? {texto_debitos}
 Cliente está satisfeito com o atendimento da Consigaz? {texto_satisfacao}
 
 Obs.: {observacoes}
