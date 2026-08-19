@@ -169,7 +169,11 @@ s2_l5_c1, s2_l5_c2 = st.columns(2)
 with s2_l5_c1:
     central_norma = st.selectbox("Central dentro de norma? *", ["Sim", "Não"], index=None, placeholder="Selecione", key=f"central_norma_{rc}")
 with s2_l5_c2:
-    st.write("")
+    desc_central_norma = ""
+    if central_norma == "Não":
+        desc_central_norma = st.text_input("Motivo da Central fora de norma *", placeholder="Ex: Falta de extintor...", key=f"desc_central_norma_{rc}")
+    else:
+        st.write("")
 
 st.divider()
 
@@ -302,6 +306,7 @@ def validar_campos_obrigatorios():
     if not possui_debitos: campos_faltantes.append("Cliente possui débitos?")
     if possui_debitos == "Sim" and not desc_debitos.strip(): campos_faltantes.append("Detalhes dos Débitos (Pois marcou que possui)")
     if not central_norma: campos_faltantes.append("Central dentro de norma?")
+    if central_norma == "Não" and not desc_central_norma.strip(): campos_faltantes.append("Motivo da Central fora de norma (Pois marcou que não está)")
     
     # Validações Seção 4
     if not indica_negocios: campos_faltantes.append("Indicou novos negócios?")
@@ -475,6 +480,10 @@ with col_btn2:
             if possui_debitos == "Sim" and desc_debitos.strip():
                 texto_debitos += f" - {desc_debitos.strip()}"
 
+            texto_central_norma = central_norma
+            if central_norma == "Não" and desc_central_norma.strip():
+                texto_central_norma += f" - {desc_central_norma.strip()}"
+
             texto_negocios = indica_negocios
             if indica_negocios == "Sim" and desc_negocios.strip():
                 texto_negocios += f" - {desc_negocios.strip()}"
@@ -500,7 +509,7 @@ Equipamentos de acordo com o contrato vigente? {texto_eq_contrato}
 Frequência cadastrada? {freq_cadastrada}
 Consumo mensal atual de acordo com o contrato vigente? Consumo previsto: {consumo_previsto} kg | Consumo médio: {consumo_real} kg
 Laudo ART emitido? {linha_art}
-Central atende as normas? {central_norma}
+Central atende as normas? {texto_central_norma}
 
 Quais equipamentos disponíveis no cliente?
 
