@@ -123,47 +123,53 @@ with s1_l2_c3:
 st.divider()
 
 
-# --- SEÇÃO 2: INFORMAÇÕES CONTRATUAIS (Organizado Linha por Linha) ---
+# --- SEÇÃO 2: INFORMAÇÕES CONTRATUAIS (Organizado Linha por Linha com Tab Lateral) ---
 st.subheader("2. Informações Contratuais")
 
-# Linha 1
-s2_l1_c1, s2_l1_c2 = st.columns(2)
+# Linha 1 (3 colunas: Equipamentos de acordo com contrato -> Equipamentos disponíveis -> Frequência cadastrada)
+s2_l1_c1, s2_l1_c2, s2_l1_c3 = st.columns(3)
 with s2_l1_c1:
     eq_contrato = st.selectbox("Equipamentos de acordo com contrato? *", ["Sim", "Não"], index=None, placeholder="Selecione", key=f"eq_contrato_{rc}")
 with s2_l1_c2:
+    desc_eq_contrato = st.text_input("Quais equipamentos disponíveis? *", placeholder="Ex: 01 B190 + 01 CC...", key=f"desc_eq_contrato_{rc}")
+with s2_l1_c3:
     freq_cadastrada = st.text_input("Frequência Cadastrada *", placeholder="Ex: QUINZENAL", key=f"freq_cad_{rc}")
 
 # Linha 2
 s2_l2_c1, s2_l2_c2 = st.columns(2)
 with s2_l2_c1:
-    desc_eq_contrato = st.text_input("Quais equipamentos disponíveis? *", placeholder="Ex: 01 B190 + 01 CC...", key=f"desc_eq_contrato_{rc}")
+    consumo_previsto = st.text_input("Consumo Previsto (kg) *", placeholder="Ex: 250", key=f"cons_prev_{rc}")
 with s2_l2_c2:
     consumo_real = st.text_input("Consumo Real/Médio (kg) *", placeholder="Ex: 137", key=f"cons_real_{rc}")
 
 # Linha 3
 s2_l3_c1, s2_l3_c2 = st.columns(2)
 with s2_l3_c1:
-    consumo_previsto = st.text_input("Consumo Previsto (kg) *", placeholder="Ex: 250", key=f"cons_prev_{rc}")
+    possui_art = st.selectbox("Possui ART? *", ["Sim", "Não"], index=None, placeholder="Selecione", key=f"possui_art_{rc}")
 with s2_l3_c2:
-    num_art = st.text_input("Número da ART (se possuir)", placeholder="Ex: 2620261267273002...", key=f"num_art_{rc}")
+    num_art = ""
+    if possui_art == "Sim":
+        num_art = st.text_input("Número da ART *", placeholder="Ex: 2620261267273002...", key=f"num_art_{rc}")
+    else:
+        st.write("")
 
 # Linha 4
 s2_l4_c1, s2_l4_c2 = st.columns(2)
 with s2_l4_c1:
-    possui_art = st.selectbox("Possui ART? *", ["Sim", "Não"], index=None, placeholder="Selecione", key=f"possui_art_{rc}")
-with s2_l4_c2:
     possui_debitos = st.selectbox("Cliente possui débitos? *", ["Sim", "Não"], index=None, placeholder="Selecione", key=f"possui_debitos_{rc}")
+with s2_l4_c2:
+    desc_debitos = ""
+    if possui_debitos == "Sim":
+        desc_debitos = st.text_input("Detalhes dos Débitos *", placeholder="Ex: Fatura vencida de R$...", key=f"desc_debitos_{rc}")
+    else:
+        st.write("")
 
 # Linha 5
 s2_l5_c1, s2_l5_c2 = st.columns(2)
 with s2_l5_c1:
     central_norma = st.selectbox("Central dentro de norma? *", ["Sim", "Não"], index=None, placeholder="Selecione", key=f"central_norma_{rc}")
 with s2_l5_c2:
-    desc_debitos = ""
-    if possui_debitos == "Sim":
-        desc_debitos = st.text_input("Detalhes dos Débitos *", placeholder="Ex: Fatura vencida de R$...", key=f"desc_debitos_{rc}")
-    else:
-        st.write("")
+    st.write("")
 
 st.divider()
 
@@ -288,8 +294,8 @@ def validar_campos_obrigatorios():
     # Validações Seção 2
     if not eq_contrato: campos_faltantes.append("Equipamentos de acordo com contrato?")
     if not desc_eq_contrato.strip(): campos_faltantes.append("Quais equipamentos disponíveis (Contrato)")
-    if not consumo_previsto.strip(): campos_faltantes.append("Consumo Previsto")
     if not freq_cadastrada.strip(): campos_faltantes.append("Frequência Cadastrada")
+    if not consumo_previsto.strip(): campos_faltantes.append("Consumo Previsto")
     if not consumo_real.strip(): campos_faltantes.append("Consumo Real/Médio")
     if not possui_art: campos_faltantes.append("Possui ART?")
     if possui_art == "Sim" and not num_art.strip(): campos_faltantes.append("Número da ART (Pois marcou que possui)")
