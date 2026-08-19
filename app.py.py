@@ -239,7 +239,6 @@ st.divider()
 
 
 # --- SEÇÃO 7: AÇÕES E GERAÇÃO DE RELATÓRIO ---
-# Função de Validação de Campos Obrigatórios
 def validar_campos_obrigatorios():
     campos_faltantes = []
     
@@ -293,7 +292,7 @@ def gerar_pdf(equipamentos, dic_fotos, cod_cliente, nome_cliente):
     pdf.set_margins(10, 35, 10)
     pdf.set_auto_page_break(auto=True, margin=20)
 
-    # Renderiza as Fotos com Cálculo Inteligente de Proporção
+    # Renderiza as Fotos com Centralização Garantida
     for categoria, arquivos in dic_fotos.items():
         if arquivos:
             pdf.add_page()
@@ -310,29 +309,22 @@ def gerar_pdf(equipamentos, dic_fotos, cod_cliente, nome_cliente):
                     temp_path = f"temp_{categoria}_{idx}.jpg"
                     img.save(temp_path)
                     
-                    # Identifica largura e altura originais
                     img_w_px, img_h_px = img.size
                     proporcao = img_h_px / img_w_px
                     
-                    # Tenta forçar a largura para 130mm
                     w_alvo = 130
                     h_alvo = w_alvo * proporcao
                     
-                    # Se a foto for muito vertical (alta demais), reduzimos a altura para 110mm
                     if h_alvo > 110:
                         h_alvo = 110
                         w_alvo = h_alvo / proporcao
                     
-                    # Calcula o centro exato matematicamente (A4 tem 210mm de largura)
                     pos_x_centro = (210 - w_alvo) / 2
                     
-                    # Evita que a foto corte no final da página (A4 tem 297mm de altura)
                     if pdf.get_y() + h_alvo > 270:
                         pdf.add_page()
                     
                     pdf.image(temp_path, x=pos_x_centro, y=pdf.get_y(), w=w_alvo, h=h_alvo)
-                    
-                    # Desloca o cursor Y para baixo da imagem criada + um respiro
                     pdf.set_y(pdf.get_y() + h_alvo + 5)
                     
                     if os.path.exists(temp_path):
@@ -421,26 +413,21 @@ with col_btn2:
         if erros_texto:
             st.error(f"⚠️ **Preencha os campos obrigatórios antes de gerar:**\n\n" + "\n".join([f"- {erro}" for erro in erros_texto]))
         else:
-            # Lógica para exibição do ART
             if possui_art == "Sim":
                 linha_art = f"(x) Sim ( ) Não {num_art}".strip()
             else:
                 linha_art = "( ) Sim (x) Não"
                 
-            # Lógica de Equipamentos Contrato
             texto_eq_contrato = f"{eq_contrato}. {desc_eq_contrato.strip()}".strip() if desc_eq_contrato.strip() else eq_contrato
                 
-            # Lógica para Novos Negócios
             texto_negocios = indica_negocios
             if indica_negocios == "Sim" and desc_negocios.strip():
                 texto_negocios += f" - {desc_negocios.strip()}"
                 
-            # Lógica para Satisfação
             texto_satisfacao = cliente_satisfeito
             if desc_satisfacao.strip():
                 texto_satisfacao += f", {desc_satisfacao.strip()}"
                 
-            # Equipamentos Formatados
             lista_eq_formatada = ""
             if st.session_state.equipamentos:
                 for eq in st.session_state.equipamentos:
@@ -448,10 +435,8 @@ with col_btn2:
             else:
                 lista_eq_formatada = "Nenhum equipamento cadastrado.\n\n"
                 
-            # Vazão
             vazao_total_str = f"{total_vazao:.2f}".replace(".", ",").rstrip("0").rstrip(",") if total_vazao > 0 else "0"
 
-            # Montagem do Texto Final
             texto_final = f"""Contato: {contato}
 Sobrenome ou departamento: {departamento}
 Telefone: {telefone}
@@ -472,5 +457,5 @@ Cliente está satisfeito com o atendimento da Consigaz? {texto_satisfacao}
 
 Obs.: {observacoes}
 """
-            st.success("✅ Texto gerado com sucesso!")
-            st.text_area("Copie o texto abaixo para colar no sistema:", value=texto_final, height=450)
+            st.success("✅ Texto gerado com sucesso! Utilize o botão de copiar no canto superior direito do bloco abaixo:")
+            st.code(texto_final, language="text")
