@@ -129,7 +129,7 @@ with col_ic1:
 with col_ic2:
     freq_cadastrada = st.text_input("Frequência Cadastrada", placeholder="Ex: QUINZENAL", key=f"freq_cad_{rc}")
     consumo_real = st.text_input("Consumo Real/Médio (kg)", placeholder="Ex: 137", key=f"cons_real_{rc}")
-    st.write(" ") # Espaçamento para alinhar visualmente com a coluna da esquerda
+    st.write(" ")
     st.write(" ")
     num_art = st.text_input("Número da ART (se possuir)", placeholder="Ex: 2620261267273002...", key=f"num_art_{rc}")
     possui_debitos = st.selectbox("Cliente possui débitos?", ["Sim", "Não"], key=f"possui_debitos_{rc}")
@@ -290,7 +290,9 @@ def gerar_pdf(equipamentos, dic_fotos, cod_cliente, nome_cliente):
                     temp_path = f"temp_{categoria}_{idx}.jpg"
                     img.save(temp_path)
                     
-                    pdf.image(temp_path, x="C", w=130)
+                    # CORREÇÃO APLICADA AQUI: Substituído x="C" por x=40 
+                    # 40 é a margem centralizada exata para uma imagem w=130 em folha A4 (210mm)
+                    pdf.image(temp_path, x=40, w=130)
                     pdf.ln(3)
                     
                     if os.path.exists(temp_path):
