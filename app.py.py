@@ -129,7 +129,7 @@ st.subheader("2. Informações Contratuais")
 # Linha 1
 s2_l1_c1, s2_l1_c2 = st.columns(2)
 with s2_l1_c1:
-    eq_contrato = st.selectbox("Equipamentos de acordo com contrato? *", ["", "Sim", "Não"], index=0, key=f"eq_contrato_{rc}")
+    eq_contrato = st.selectbox("Equipamentos de acordo com contrato? *", ["Sim", "Não"], index=None, placeholder="Selecione", key=f"eq_contrato_{rc}")
 with s2_l1_c2:
     freq_cadastrada = st.text_input("Frequência Cadastrada *", placeholder="Ex: QUINZENAL", key=f"freq_cad_{rc}")
 
@@ -150,14 +150,14 @@ with s2_l3_c2:
 # Linha 4
 s2_l4_c1, s2_l4_c2 = st.columns(2)
 with s2_l4_c1:
-    possui_art = st.selectbox("Possui ART? *", ["", "Sim", "Não"], index=0, key=f"possui_art_{rc}")
+    possui_art = st.selectbox("Possui ART? *", ["Sim", "Não"], index=None, placeholder="Selecione", key=f"possui_art_{rc}")
 with s2_l4_c2:
-    possui_debitos = st.selectbox("Cliente possui débitos? *", ["", "Sim", "Não"], index=0, key=f"possui_debitos_{rc}")
+    possui_debitos = st.selectbox("Cliente possui débitos? *", ["Sim", "Não"], index=None, placeholder="Selecione", key=f"possui_debitos_{rc}")
 
 # Linha 5
 s2_l5_c1, s2_l5_c2 = st.columns(2)
 with s2_l5_c1:
-    central_norma = st.selectbox("Central dentro de norma? *", ["", "Sim", "Não"], index=0, key=f"central_norma_{rc}")
+    central_norma = st.selectbox("Central dentro de norma? *", ["Sim", "Não"], index=None, placeholder="Selecione", key=f"central_norma_{rc}")
 with s2_l5_c2:
     desc_debitos = ""
     if possui_debitos == "Sim":
@@ -232,9 +232,9 @@ st.subheader("4. Novos Negócios / Satisfação")
 # Linha 1
 s4_l1_c1, s4_l1_c2 = st.columns(2)
 with s4_l1_c1:
-    indica_negocios = st.selectbox("Indicou novos negócios? *", ["", "Sim", "Não"], index=0, key=f"indica_negocios_{rc}")
+    indica_negocios = st.selectbox("Indicou novos negócios? *", ["Sim", "Não"], index=None, placeholder="Selecione", key=f"indica_negocios_{rc}")
 with s4_l1_c2:
-    cliente_satisfeito = st.selectbox("Cliente está satisfeito com a Consigaz? *", ["", "Sim", "Não"], index=0, key=f"cliente_satisfeito_{rc}")
+    cliente_satisfeito = st.selectbox("Cliente está satisfeito com a Consigaz? *", ["Sim", "Não"], index=None, placeholder="Selecione", key=f"cliente_satisfeito_{rc}")
 
 # Linha 2
 s4_l2_c1, s4_l2_c2 = st.columns(2)
