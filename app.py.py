@@ -121,13 +121,16 @@ col_ic1, col_ic2 = st.columns(2)
 
 with col_ic1:
     eq_contrato = st.selectbox("Equipamentos de acordo com contrato?", ["Sim", "Não"], key=f"eq_contrato_{rc}")
-    consumo_previsto = st.text_input("Consumo Previsto", placeholder="Ex: 250", key=f"cons_prev_{rc}")
+    desc_eq_contrato = st.text_input("Quais equipamentos disponíveis?", placeholder="Ex: 01 B190 + 01 CC...", key=f"desc_eq_contrato_{rc}")
+    consumo_previsto = st.text_input("Consumo Previsto (kg)", placeholder="Ex: 250", key=f"cons_prev_{rc}")
     possui_art = st.selectbox("Possui ART?", ["Sim", "Não"], key=f"possui_art_{rc}")
     central_norma = st.selectbox("Central dentro de norma?", ["Sim", "Não"], key=f"central_norma_{rc}")
 
 with col_ic2:
     freq_cadastrada = st.text_input("Frequência Cadastrada", placeholder="Ex: QUINZENAL", key=f"freq_cad_{rc}")
-    consumo_real = st.text_input("Consumo Real/Médio", placeholder="Ex: 137", key=f"cons_real_{rc}")
+    consumo_real = st.text_input("Consumo Real/Médio (kg)", placeholder="Ex: 137", key=f"cons_real_{rc}")
+    st.write(" ") # Espaçamento para alinhar visualmente com a coluna da esquerda
+    st.write(" ")
     num_art = st.text_input("Número da ART (se possuir)", placeholder="Ex: 2620261267273002...", key=f"num_art_{rc}")
     possui_debitos = st.selectbox("Cliente possui débitos?", ["Sim", "Não"], key=f"possui_debitos_{rc}")
 
@@ -331,7 +334,7 @@ def gerar_pdf(equipamentos, dic_fotos, cod_cliente, nome_cliente):
     if pdf.page_no() == 0:
         pdf.add_page()
 
-    return bytes(pdf.output())
+    return pdf.output(dest="S").encode("latin-1")
 
 st.subheader("7. Ações Finais")
 col_btn1, col_btn2 = st.columns(2)
@@ -372,6 +375,9 @@ with col_btn2:
         else:
             linha_art = "( ) Sim (x) Não"
             
+        # Lógica de Equipamentos Contrato
+        texto_eq_contrato = f"{eq_contrato}. {desc_eq_contrato.strip()}".strip() if desc_eq_contrato.strip() else eq_contrato
+            
         # Lógica para Novos Negócios
         texto_negocios = indica_negocios
         if indica_negocios == "Sim" and desc_negocios.strip():
@@ -398,7 +404,7 @@ with col_btn2:
 Sobrenome ou departamento: {departamento}
 Telefone: {telefone}
 
-Equipamentos de acordo com o contrato vigente? {eq_contrato}
+Equipamentos de acordo com o contrato vigente? {texto_eq_contrato}
 Frequência cadastrada? {freq_cadastrada}
 Consumo mensal atual de acordo com o contrato vigente? Consumo previsto: {consumo_previsto} kg | Consumo médio: {consumo_real} kg
 Laudo ART emitido? {linha_art}
