@@ -99,45 +99,71 @@ setTimeout(aplicarBotaoFlutuante, 1500);
 components.html(JS_FLUTUANTE, height=0, width=0)
 
 
-# --- SEÇÃO 1: DADOS DO CLIENTE ---
+# --- SEÇÃO 1: DADOS DO CLIENTE (Organizado Linha por Linha para o Tab ir Lateral) ---
 st.subheader("1. Identificação do Cliente")
-col_c1, col_c2, col_c3 = st.columns(3)
 
-with col_c1:
+# Linha 1
+s1_l1_c1, s1_l1_c2, s1_l1_c3 = st.columns(3)
+with s1_l1_c1:
     cod_cliente = st.text_input("Código do Cliente *", placeholder="Ex: 87.653", key=f"input_cod_{rc}")
-    contato = st.text_input("Contato *", placeholder="Ex: Nilton", key=f"input_contato_{rc}")
-with col_c2:
+with s1_l1_c2:
     nome_cliente = st.text_input("Nome / Razão Social *", placeholder="Ex: SABOR DA TERRA", key=f"input_nome_{rc}")
-    departamento = st.text_input("Sobrenome ou Departamento *", placeholder="Ex: Gerente", key=f"input_depto_{rc}")
-with col_c3:
+with s1_l1_c3:
     telefone = st.text_input("Telefone *", placeholder="Ex: 12-992586760", key=f"input_tel_{rc}")
+
+# Linha 2
+s1_l2_c1, s1_l2_c2, s1_l2_c3 = st.columns(3)
+with s1_l2_c1:
+    contato = st.text_input("Contato *", placeholder="Ex: Nilton", key=f"input_contato_{rc}")
+with s1_l2_c2:
+    departamento = st.text_input("Sobrenome ou Departamento *", placeholder="Ex: Gerente", key=f"input_depto_{rc}")
+with s1_l2_c3:
+    st.write("")
 
 st.divider()
 
 
-# --- SEÇÃO 2: INFORMAÇÕES CONTRATUAIS ---
+# --- SEÇÃO 2: INFORMAÇÕES CONTRATUAIS (Organizado Linha por Linha) ---
 st.subheader("2. Informações Contratuais")
-col_ic1, col_ic2 = st.columns(2)
 
-with col_ic1:
+# Linha 1
+s2_l1_c1, s2_l1_c2 = st.columns(2)
+with s2_l1_c1:
     eq_contrato = st.selectbox("Equipamentos de acordo com contrato? *", ["Sim", "Não"], key=f"eq_contrato_{rc}")
-    desc_eq_contrato = st.text_input("Quais equipamentos disponíveis? *", placeholder="Ex: 01 B190 + 01 CC...", key=f"desc_eq_contrato_{rc}")
-    consumo_previsto = st.text_input("Consumo Previsto (kg) *", placeholder="Ex: 250", key=f"cons_prev_{rc}")
-    possui_art = st.selectbox("Possui ART? *", ["Sim", "Não"], key=f"possui_art_{rc}")
-    central_norma = st.selectbox("Central dentro de norma? *", ["Sim", "Não"], key=f"central_norma_{rc}")
-
-with col_ic2:
+with s2_l1_c2:
     freq_cadastrada = st.text_input("Frequência Cadastrada *", placeholder="Ex: QUINZENAL", key=f"freq_cad_{rc}")
+
+# Linha 2
+s2_l2_c1, s2_l2_c2 = st.columns(2)
+with s2_l2_c1:
+    desc_eq_contrato = st.text_input("Quais equipamentos disponíveis? *", placeholder="Ex: 01 B190 + 01 CC...", key=f"desc_eq_contrato_{rc}")
+with s2_l2_c2:
     consumo_real = st.text_input("Consumo Real/Médio (kg) *", placeholder="Ex: 137", key=f"cons_real_{rc}")
-    st.write(" ")
-    st.write(" ")
+
+# Linha 3
+s2_l3_c1, s2_l3_c2 = st.columns(2)
+with s2_l3_c1:
+    consumo_previsto = st.text_input("Consumo Previsto (kg) *", placeholder="Ex: 250", key=f"cons_prev_{rc}")
+with s2_l3_c2:
     num_art = st.text_input("Número da ART (se possuir)", placeholder="Ex: 2620261267273002...", key=f"num_art_{rc}")
+
+# Linha 4
+s2_l4_c1, s2_l4_c2 = st.columns(2)
+with s2_l4_c1:
+    possui_art = st.selectbox("Possui ART? *", ["Sim", "Não"], key=f"possui_art_{rc}")
+with s2_l4_c2:
     possui_debitos = st.selectbox("Cliente possui débitos? *", ["Sim", "Não"], key=f"possui_debitos_{rc}")
-    
-    # Campo condicional para débitos
+
+# Linha 5
+s2_l5_c1, s2_l5_c2 = st.columns(2)
+with s2_l5_c1:
+    central_norma = st.selectbox("Central dentro de norma? *", ["Sim", "Não"], key=f"central_norma_{rc}")
+with s2_l5_c2:
     desc_debitos = ""
     if possui_debitos == "Sim":
         desc_debitos = st.text_input("Detalhes dos Débitos *", placeholder="Ex: Fatura vencida de R$...", key=f"desc_debitos_{rc}")
+    else:
+        st.write("")
 
 st.divider()
 
@@ -200,16 +226,21 @@ if st.session_state.equipamentos:
 st.divider()
 
 
-# --- SEÇÃO 4: NOVOS NEGÓCIOS / SATISFAÇÃO ---
+# --- SEÇÃO 4: NOVOS NEGÓCIOS / SATISFAÇÃO (Organizado Linha por Linha) ---
 st.subheader("4. Novos Negócios / Satisfação")
-col_nn1, col_nn2 = st.columns(2)
 
-with col_nn1:
+# Linha 1
+s4_l1_c1, s4_l1_c2 = st.columns(2)
+with s4_l1_c1:
     indica_negocios = st.selectbox("Indicou novos negócios? *", ["Sim", "Não"], key=f"indica_negocios_{rc}")
-    desc_negocios = st.text_input("Detalhes da indicação", placeholder="Ex: Vizinho quer instalar gás", key=f"desc_negocios_{rc}")
-
-with col_nn2:
+with s4_l1_c2:
     cliente_satisfeito = st.selectbox("Cliente está satisfeito com a Consigaz? *", ["Sim", "Não"], key=f"cliente_satisfeito_{rc}")
+
+# Linha 2
+s4_l2_c1, s4_l2_c2 = st.columns(2)
+with s4_l2_c1:
+    desc_negocios = st.text_input("Detalhes da indicação", placeholder="Ex: Vizinho quer instalar gás", key=f"desc_negocios_{rc}")
+with s4_l2_c2:
     desc_satisfacao = st.text_input("Motivo ou observação da satisfação", placeholder="Ex: Bom atendimento", key=f"desc_satisfacao_{rc}")
 
 st.divider()
@@ -426,7 +457,6 @@ with col_btn2:
                 
             texto_eq_contrato = f"{eq_contrato}. {desc_eq_contrato.strip()}".strip() if desc_eq_contrato.strip() else eq_contrato
                 
-            # Lógica para Débitos
             texto_debitos = possui_debitos
             if possui_debitos == "Sim" and desc_debitos.strip():
                 texto_debitos += f" - {desc_debitos.strip()}"
