@@ -126,14 +126,20 @@ st.divider()
 # --- SEÇÃO 2: INFORMAÇÕES CONTRATUAIS (Organizado Linha por Linha com Tab Lateral) ---
 st.subheader("2. Informações Contratuais")
 
-# Linha 1 (3 colunas: Equipamentos de acordo com contrato -> Equipamentos disponíveis -> Frequência cadastrada)
-s2_l1_c1, s2_l1_c2, s2_l1_c3 = st.columns(3)
+# Linha 1 (4 colunas)
+s2_l1_c1, s2_l1_c2, s2_l1_c3, s2_l1_c4 = st.columns(4)
 with s2_l1_c1:
     eq_contrato = st.selectbox("Equipamentos de acordo com contrato? *", ["Sim", "Não"], index=None, placeholder="Selecione", key=f"eq_contrato_{rc}")
 with s2_l1_c2:
     desc_eq_contrato = st.text_input("Quais equipamentos disponíveis? *", placeholder="Ex: 01 B190 + 01 CC...", key=f"desc_eq_contrato_{rc}")
 with s2_l1_c3:
-    freq_cadastrada = st.text_input("Frequência Cadastrada *", placeholder="Ex: QUINZENAL", key=f"freq_cad_{rc}")
+    tem_freq = st.selectbox("Frequência cadastrada? *", ["Sim", "Não"], index=None, placeholder="Selecione", key=f"tem_freq_{rc}")
+with s2_l1_c4:
+    freq_cadastrada = ""
+    if tem_freq == "Sim":
+        freq_cadastrada = st.text_input("Qual a frequência? *", placeholder="Ex: QUINZENAL", key=f"freq_cad_{rc}")
+    else:
+        st.write("")
 
 # Linha 2
 s2_l2_c1, s2_l2_c2 = st.columns(2)
@@ -285,20 +291,27 @@ st.divider()
 
 
 # --- SEÇÃO 7: AÇÕES E GERAÇÃO DE RELATÓRIO ---
-def validar_campos_obrigatorios():
+def validar_campos_pdf():
     campos_faltantes = []
-    
-    # Validações Seção 1
+    # Para o PDF, a exigência é mínima (apenas Código e Nome)
+    if not cod_cliente.strip(): campos_faltantes.append("Código do Cliente")
+    if not nome_cliente.strip(): campos_faltantes.append("Nome / Razão Social")
+    return campos_faltantes
+
+def validar_campos_texto():
+    campos_faltantes = []
+    # Para o Texto do Sistema, as exigências de formulário continuam
     if not cod_cliente.strip(): campos_faltantes.append("Código do Cliente")
     if not contato.strip(): campos_faltantes.append("Contato")
     if not nome_cliente.strip(): campos_faltantes.append("Nome / Razão Social")
     if not departamento.strip(): campos_faltantes.append("Sobrenome ou Departamento")
     if not telefone.strip(): campos_faltantes.append("Telefone")
     
-    # Validações Seção 2
     if not eq_contrato: campos_faltantes.append("Equipamentos de acordo com contrato?")
     if not desc_eq_contrato.strip(): campos_faltantes.append("Quais equipamentos disponíveis (Contrato)")
-    if not freq_cadastrada.strip(): campos_faltantes.append("Frequência Cadastrada")
+    if not tem_freq: campos_faltantes.append("Frequência cadastrada?")
+    if tem_freq == "Sim" and not freq_cadastrada.strip(): campos_faltantes.append("Qual a frequência? (Pois marcou 'Sim')")
+    
     if not consumo_previsto.strip(): campos_faltantes.append("Consumo Previsto")
     if not consumo_real.strip(): campos_faltantes.append("Consumo Real/Médio")
     if not possui_art: campos_faltantes.append("Possui ART?")
@@ -308,11 +321,11 @@ def validar_campos_obrigatorios():
     if not central_norma: campos_faltantes.append("Central dentro de norma?")
     if central_norma == "Não" and not desc_central_norma.strip(): campos_faltantes.append("Motivo da Central fora de norma (Pois marcou que não está)")
     
-    # Validações Seção 4
     if not indica_negocios: campos_faltantes.append("Indicou novos negócios?")
     if not cliente_satisfeito: campos_faltantes.append("Cliente está satisfeito com a Consigaz?")
     
     return campos_faltantes
+
 
 class RelatorioPDF(FPDF):
     def __init__(self, cod_cliente="", nome_cliente=""):
@@ -426,15 +439,16 @@ def gerar_pdf(equipamentos, dic_fotos, cod_cliente, nome_cliente):
 
     return pdf.output(dest="S").encode("latin-1")
 
+
 st.subheader("7. Ações Finais")
 col_btn1, col_btn2 = st.columns(2)
 
 with col_btn1:
     if st.button("📄 Gerar Relatório PDF"):
-        erros_pdf = validar_campos_obrigatorios()
+        erros_pdf = validar_campos_pdf()
         
         if erros_pdf:
-            st.error(f"⚠️ **Preencha os campos obrigatórios antes de gerar:**\n\n" + "\n".join([f"- {erro}" for erro in erros_pdf]))
+            st.error(f"⚠️ **Para o PDF, preencha pelo menos os seguintes campos:**\n\n" + "\n".join([f"- {erro}" for erro in erros_pdf]))
         else:
             dicionario_fotos = {
                 "FACHADA": fotos_fachada,
@@ -464,7 +478,7 @@ with col_btn1:
 
 with col_btn2:
     if st.button("📝 Gerar Texto para Sistema"):
-        erros_texto = validar_campos_obrigatorios()
+        erros_texto = validar_campos_texto()
         
         if erros_texto:
             st.error(f"⚠️ **Preencha os campos obrigatórios antes de gerar:**\n\n" + "\n".join([f"- {erro}" for erro in erros_texto]))
@@ -475,6 +489,10 @@ with col_btn2:
                 linha_art = "( ) Sim (x) Não"
                 
             texto_eq_contrato = f"{eq_contrato}. {desc_eq_contrato.strip()}".strip() if desc_eq_contrato.strip() else eq_contrato
+            
+            texto_freq = tem_freq
+            if tem_freq == "Sim" and freq_cadastrada.strip():
+                texto_freq += f" - {freq_cadastrada.strip()}"
                 
             texto_debitos = possui_debitos
             if possui_debitos == "Sim" and desc_debitos.strip():
@@ -506,7 +524,7 @@ Sobrenome ou departamento: {departamento}
 Telefone: {telefone}
 
 Equipamentos de acordo com o contrato vigente? {texto_eq_contrato}
-Frequência cadastrada? {freq_cadastrada}
+Frequência cadastrada? {texto_freq}
 Consumo mensal atual de acordo com o contrato vigente? Consumo previsto: {consumo_previsto} kg | Consumo médio: {consumo_real} kg
 Laudo ART emitido? {linha_art}
 Central atende as normas? {texto_central_norma}
