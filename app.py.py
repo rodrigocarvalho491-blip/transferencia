@@ -133,11 +133,13 @@ with s2_l1_c1:
 with s2_l1_c2:
     desc_eq_contrato = st.text_input("Quais equipamentos disponíveis? *", placeholder="Ex: 01 B190 + 01 CC...", key=f"desc_eq_contrato_{rc}")
 with s2_l1_c3:
-    tem_freq = st.selectbox("Frequência cadastrada? *", ["Sim", "Não"], index=None, placeholder="Selecione", key=f"tem_freq_{rc}")
+    tem_freq = st.selectbox("Possui programação cadastrada? *", ["Sim", "Não"], index=None, placeholder="Selecione", key=f"tem_freq_{rc}")
 with s2_l1_c4:
-    freq_cadastrada = ""
+    desc_freq = ""
     if tem_freq == "Sim":
-        freq_cadastrada = st.text_input("Qual a frequência? *", placeholder="Ex: QUINZENAL", key=f"freq_cad_{rc}")
+        desc_freq = st.text_input("Qual a programação? *", placeholder="Ex: QUINZENAL", key=f"freq_cad_sim_{rc}")
+    elif tem_freq == "Não":
+        desc_freq = st.text_input("Nº OC de Cadastramento *", placeholder="Ex: OC.: X.XXX.XXX SOL PROGRAMAÇÃO", key=f"freq_cad_nao_{rc}")
     else:
         st.write("")
 
@@ -309,8 +311,10 @@ def validar_campos_texto():
     
     if not eq_contrato: campos_faltantes.append("Equipamentos de acordo com contrato?")
     if not desc_eq_contrato.strip(): campos_faltantes.append("Quais equipamentos disponíveis (Contrato)")
-    if not tem_freq: campos_faltantes.append("Frequência cadastrada?")
-    if tem_freq == "Sim" and not freq_cadastrada.strip(): campos_faltantes.append("Qual a frequência? (Pois marcou 'Sim')")
+    
+    if not tem_freq: campos_faltantes.append("Possui programação cadastrada?")
+    if tem_freq == "Sim" and not desc_freq.strip(): campos_faltantes.append("Qual a programação? (Pois marcou 'Sim')")
+    if tem_freq == "Não" and not desc_freq.strip(): campos_faltantes.append("Nº OC de Cadastramento (Pois marcou 'Não')")
     
     if not consumo_previsto.strip(): campos_faltantes.append("Consumo Previsto")
     if not consumo_real.strip(): campos_faltantes.append("Consumo Real/Médio")
@@ -491,8 +495,8 @@ with col_btn2:
             texto_eq_contrato = f"{eq_contrato}. {desc_eq_contrato.strip()}".strip() if desc_eq_contrato.strip() else eq_contrato
             
             texto_freq = tem_freq
-            if tem_freq == "Sim" and freq_cadastrada.strip():
-                texto_freq += f" - {freq_cadastrada.strip()}"
+            if tem_freq in ["Sim", "Não"] and desc_freq.strip():
+                texto_freq += f" - {desc_freq.strip()}"
                 
             texto_debitos = possui_debitos
             if possui_debitos == "Sim" and desc_debitos.strip():
@@ -524,7 +528,7 @@ Sobrenome ou departamento: {departamento}
 Telefone: {telefone}
 
 Equipamentos de acordo com o contrato vigente? {texto_eq_contrato}
-Frequência cadastrada? {texto_freq}
+Possui programação cadastrada? {texto_freq}
 Consumo mensal atual de acordo com o contrato vigente? Consumo previsto: {consumo_previsto} kg | Consumo médio: {consumo_real} kg
 Laudo ART emitido? {linha_art}
 Central atende as normas? {texto_central_norma}
