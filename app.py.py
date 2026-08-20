@@ -139,7 +139,7 @@ with s2_l1_c4:
     if tem_freq == "Sim":
         desc_freq = st.text_input("Qual a programação? *", placeholder="Ex: QUINZENAL", key=f"freq_cad_sim_{rc}")
     elif tem_freq == "Não":
-        desc_freq = st.text_input("Nº OC de Cadastramento *", placeholder="Ex: OC.: X.XXX.XXX SOL PROGRAMAÇÃO", key=f"freq_cad_nao_{rc}")
+        desc_freq = st.text_input("Nº OC de Cadastramento *", placeholder="Ex: [OPERACOES & LOGISTICA] SOL PROGRAMAÇÃO", key=f"freq_cad_nao_{rc}")
     else:
         st.write("")
 
