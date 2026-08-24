@@ -155,9 +155,11 @@ s2_l3_c1, s2_l3_c2 = st.columns(2)
 with s2_l3_c1:
     possui_art = st.selectbox("Possui ART? *", ["Sim", "Não"], index=None, placeholder="Selecione", key=f"possui_art_{rc}")
 with s2_l3_c2:
-    num_art = ""
+    desc_art = ""
     if possui_art == "Sim":
-        num_art = st.text_input("Número da ART *", placeholder="Ex: 2620261267273002...", key=f"num_art_{rc}")
+        desc_art = st.text_input("Número da ART *", placeholder="Ex: 2620261267273002...", key=f"art_sim_{rc}")
+    elif possui_art == "Não":
+        desc_art = st.text_input("Nº OC de Solicitação de Laudo *", placeholder="Ex: [INSTALAÇÃO] INF LAUDO TÉCNICO ART", key=f"art_nao_{rc}")
     else:
         st.write("")
 
@@ -318,8 +320,11 @@ def validar_campos_texto():
     
     if not consumo_previsto.strip(): campos_faltantes.append("Consumo Previsto")
     if not consumo_real.strip(): campos_faltantes.append("Consumo Real/Médio")
+    
     if not possui_art: campos_faltantes.append("Possui ART?")
-    if possui_art == "Sim" and not num_art.strip(): campos_faltantes.append("Número da ART (Pois marcou que possui)")
+    if possui_art == "Sim" and not desc_art.strip(): campos_faltantes.append("Número da ART (Pois marcou 'Sim')")
+    if possui_art == "Não" and not desc_art.strip(): campos_faltantes.append("Nº OC de Solicitação de Laudo (Pois marcou 'Não')")
+    
     if not possui_debitos: campos_faltantes.append("Cliente possui débitos?")
     if possui_debitos == "Sim" and not desc_debitos.strip(): campos_faltantes.append("Detalhes dos Débitos (Pois marcou que possui)")
     if not central_norma: campos_faltantes.append("Central dentro de norma?")
@@ -488,9 +493,11 @@ with col_btn2:
             st.error(f"⚠️ **Preencha os campos obrigatórios antes de gerar:**\n\n" + "\n".join([f"- {erro}" for erro in erros_texto]))
         else:
             if possui_art == "Sim":
-                linha_art = f"(x) Sim ( ) Não {num_art}".strip()
+                linha_art = f"(x) Sim ( ) Não {desc_art.strip()}"
+            elif possui_art == "Não":
+                linha_art = f"( ) Sim (x) Não - {desc_art.strip()}"
             else:
-                linha_art = "( ) Sim (x) Não"
+                linha_art = ""
                 
             texto_eq_contrato = f"{eq_contrato}. {desc_eq_contrato.strip()}".strip() if desc_eq_contrato.strip() else eq_contrato
             
