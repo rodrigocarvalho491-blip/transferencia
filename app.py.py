@@ -28,15 +28,20 @@ st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 if "reset_counter" not in st.session_state:
     st.session_state.reset_counter = 0
 
+if "eq_key_counter" not in st.session_state:
+    st.session_state.eq_key_counter = 0
+
 if "equipamentos" not in st.session_state:
     st.session_state.equipamentos = []
 
 # Função MESTRE para limpar todos os dados e reiniciar o app
 def resetar_dados():
     st.session_state.reset_counter += 1
+    st.session_state.eq_key_counter = 0
     st.session_state.equipamentos = []
 
 rc = st.session_state.reset_counter
+ekc = st.session_state.eq_key_counter
 
 # --- CABEÇALHO DO APP COM LOGO ---
 col_logo, col_titulo = st.columns([1, 4])
@@ -188,48 +193,108 @@ with s2_l5_c2:
 st.divider()
 
 
-# --- SEÇÃO 3: CADASTRO DE EQUIPAMENTOS ---
-st.subheader("3. Cadastro de Equipamentos")
+# --- SEÇÃO 3: CADASTRO DE INSTALAÇÃO ---
+st.subheader("3. Cadastro de Instalação")
 
-col_qtd, col_eq, col_vaz, col_btn = st.columns([1, 2, 2, 1])
+tipo_cadastro = st.radio("Selecione o tipo que deseja adicionar:", ["Equipamentos", "Cilindros", "Apartamentos"], horizontal=True, key=f"tipo_cad_{rc}_{ekc}")
 
-with col_qtd:
-    qtd_input = st.number_input("Quantidade", min_value=1, value=1, step=1, key=f"eq_qtd_{rc}")
-with col_eq:
-    nome_eq_input = st.text_input("Equipamento", placeholder="Ex: Forno Industrial", key=f"eq_nome_{rc}")
-with col_vaz:
-    vazao_input = st.text_input("Vazão Unitária (kg/h)", placeholder="Ex: 1 ou 1,6", key=f"eq_vazao_{rc}")
+if tipo_cadastro == "Equipamentos":
+    col_qtd, col_eq, col_vaz, col_btn = st.columns([1, 2, 2, 1])
+    with col_qtd:
+        qtd_input = st.number_input("Quantidade", min_value=1, value=1, step=1, key=f"eq_qtd_{rc}_{ekc}")
+    with col_eq:
+        nome_eq_input = st.text_input("Equipamento", placeholder="Ex: Forno Industrial", key=f"eq_nome_{rc}_{ekc}")
+    with col_vaz:
+        vazao_input = st.text_input("Vazão Unitária (kg/h)", placeholder="Ex: 1 ou 1,6", key=f"eq_vazao_{rc}_{ekc}")
+    
+    with col_btn:
+        st.write(" "); st.write(" ")
+        if st.button("➕ Adicionar", key=f"btn_add_eq_{rc}_{ekc}"):
+            if nome_eq_input.strip() and vazao_input.strip():
+                try:
+                    vazao_clean_str = vazao_input.replace(",", ".").lower().replace("kg/h", "").strip()
+                    vazao_unit = float(vazao_clean_str)
+                    qtd = int(qtd_input)
+                    
+                    vazao_total_item = vazao_unit * qtd
+                    vazao_formatada = f"{vazao_total_item:.2f}".replace(".", ",").rstrip("0").rstrip(",")
+    
+                    item_dict = {
+                        "tipo": "equipamento",
+                        "qtd": qtd,
+                        "nome": nome_eq_input.strip().upper(),
+                        "vazao_unit": vazao_unit,
+                        "vazao_total_item": vazao_total_item,
+                        "texto": f"{qtd:02d} - {nome_eq_input.strip().upper()} - {vazao_formatada} kg/h"
+                    }
+                    st.session_state.equipamentos.append(item_dict)
+                    st.session_state.eq_key_counter += 1
+                    st.success("Adicionado!")
+                    st.rerun()
+                except ValueError:
+                    st.error("Informe um valor numérico válido para a vazão.")
+            else:
+                st.warning("Preencha o equipamento e a vazão.")
 
-with col_btn:
-    st.write(" ")
-    st.write(" ")
-    if st.button("➕ Adicionar", key=f"btn_add_eq_{rc}"):
-        if nome_eq_input.strip() and vazao_input.strip():
-            try:
-                vazao_clean_str = vazao_input.replace(",", ".").lower().replace("kg/h", "").strip()
-                vazao_unit = float(vazao_clean_str)
+elif tipo_cadastro == "Cilindros":
+    col_qtd, col_mod, col_btn = st.columns([1, 4, 1])
+    with col_qtd:
+        qtd_input = st.number_input("Quantidade", min_value=1, value=1, step=1, key=f"cil_qtd_{rc}_{ekc}")
+    with col_mod:
+        modelo_input = st.text_input("Modelo do cilindro", placeholder="Ex: P20", key=f"cil_mod_{rc}_{ekc}")
+        
+    with col_btn:
+        st.write(" "); st.write(" ")
+        if st.button("➕ Adicionar", key=f"btn_add_cil_{rc}_{ekc}"):
+            if modelo_input.strip():
                 qtd = int(qtd_input)
+                texto = f"{qtd:02d} und {modelo_input.strip().upper()}"
                 
-                vazao_total_item = vazao_unit * qtd
-                vazao_formatada = f"{vazao_total_item:.2f}".replace(".", ",").rstrip("0").rstrip(",")
-
                 item_dict = {
+                    "tipo": "cilindro",
                     "qtd": qtd,
-                    "nome": nome_eq_input.strip().upper(),
-                    "vazao_unit": vazao_unit,
-                    "vazao_total_item": vazao_total_item,
-                    "texto": f"{qtd:02d} - {nome_eq_input.strip().upper()} - {vazao_formatada} kg/h"
+                    "nome": f"CILINDRO {modelo_input.strip().upper()}",
+                    "vazao_unit": 0.0,
+                    "vazao_total_item": 0.0,
+                    "texto": texto
                 }
                 st.session_state.equipamentos.append(item_dict)
+                st.session_state.eq_key_counter += 1
                 st.success("Adicionado!")
-            except ValueError:
-                st.error("Informe um valor numérico válido para a vazão.")
-        else:
-            st.warning("Preencha o equipamento e a vazão.")
+                st.rerun()
+            else:
+                st.warning("Preencha o modelo do cilindro.")
+
+elif tipo_cadastro == "Apartamentos":
+    col_qtd, col_tipo, col_btn = st.columns([1, 4, 1])
+    with col_qtd:
+        qtd_input = st.number_input("Qtd Apartamentos", min_value=1, value=1, step=1, key=f"apt_qtd_{rc}_{ekc}")
+    with col_tipo:
+        tipo_apt_input = st.selectbox("Instalação", ["Só Fogão", "Fogão + Aquecedor"], key=f"apt_tipo_{rc}_{ekc}")
+        
+    with col_btn:
+        st.write(" "); st.write(" ")
+        if st.button("➕ Adicionar", key=f"btn_add_apt_{rc}_{ekc}"):
+            qtd = int(qtd_input)
+            texto = f"{qtd:02d} aps - {tipo_apt_input}"
+            
+            item_dict = {
+                "tipo": "apartamento",
+                "qtd": qtd,
+                "nome": f"APARTAMENTO ({tipo_apt_input.upper()})",
+                "vazao_unit": 0.0,
+                "vazao_total_item": 0.0,
+                "texto": texto
+            }
+            st.session_state.equipamentos.append(item_dict)
+            st.session_state.eq_key_counter += 1
+            st.success("Adicionado!")
+            st.rerun()
+
 
 total_vazao = 0.0
 if st.session_state.equipamentos:
-    st.write("**Lista de Equipamentos Cadastrados:**")
+    st.write("**Lista de Itens Cadastrados:**")
     
     for idx, item in enumerate(st.session_state.equipamentos):
         total_vazao += item["vazao_total_item"]
@@ -414,26 +479,32 @@ def gerar_pdf(equipamentos, dic_fotos, cod_cliente, nome_cliente):
     if equipamentos:
         pdf.add_page()
         pdf.set_font("Arial", "B", 11)
-        pdf.cell(0, 6, "LISTA DE EQUIPAMENTOS E VAZÕES", ln=1, align="L")
+        pdf.cell(0, 6, "LISTA DE ITENS E VAZÕES", ln=1, align="L")
         pdf.ln(2)
         
         pdf.set_font("Arial", "B", 10)
         pdf.set_fill_color(230, 230, 230)
         pdf.cell(20, 7, "QTD", border=1, align="C", fill=True)
-        pdf.cell(120, 7, "EQUIPAMENTO", border=1, align="C", fill=True)
-        pdf.cell(50, 7, "VAZÃO TOTAL (KG/H)", border=1, align="C", fill=True, ln=1)
+        pdf.cell(120, 7, "ITEM / EQUIPAMENTO", border=1, align="C", fill=True)
+        pdf.cell(50, 7, "VAZÃO TOTAL", border=1, align="C", fill=True, ln=1)
         
         pdf.set_font("Arial", "", 10)
         total_vazao_pdf = 0.0
         for item in equipamentos:
             total_vazao_pdf += item["vazao_total_item"]
-            vazao_item_str = f"{item['vazao_total_item']:.2f}".replace(".", ",").rstrip("0").rstrip(",")
-            if not vazao_item_str or vazao_item_str == ",":
-                vazao_item_str = "0"
+            
+            # Formatação elegante para cilindros e apartamentos na tabela de PDF
+            if item.get("tipo") in ["cilindro", "apartamento"]:
+                vazao_display = "-"
+            else:
+                vazao_item_str = f"{item['vazao_total_item']:.2f}".replace(".", ",").rstrip("0").rstrip(",")
+                if not vazao_item_str or vazao_item_str == ",":
+                    vazao_item_str = "0"
+                vazao_display = f"{vazao_item_str} kg/h"
             
             pdf.cell(20, 6, f"{item['qtd']:02d}", border=1, align="C")
             pdf.cell(120, 6, f"{item['nome']}", border=1, align="L")
-            pdf.cell(50, 6, f"{vazao_item_str} kg/h", border=1, align="C", ln=1)
+            pdf.cell(50, 6, vazao_display, border=1, align="C", ln=1)
         
         vazao_total_str = f"{total_vazao_pdf:.2f}".replace(".", ",").rstrip("0").rstrip(",")
         if not vazao_total_str or vazao_total_str == ",":
@@ -526,7 +597,7 @@ with col_btn2:
                 for eq in st.session_state.equipamentos:
                     lista_eq_formatada += f"{eq['texto']}\n"
             else:
-                lista_eq_formatada = "Nenhum equipamento cadastrado.\n"
+                lista_eq_formatada = "Nenhum item cadastrado.\n"
                 
             vazao_total_str = f"{total_vazao:.2f}".replace(".", ",").rstrip("0").rstrip(",") if total_vazao > 0 else "0"
 
