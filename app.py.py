@@ -190,6 +190,17 @@ with s2_l5_c2:
     else:
         st.write("")
 
+# Linha 6
+s2_l6_c1, s2_l6_c2 = st.columns(2)
+with s2_l6_c1:
+    rep2_correto = st.selectbox("Representante 2 está correto? *", ["Sim", "Não"], index=None, placeholder="Selecione", key=f"rep2_correto_{rc}")
+with s2_l6_c2:
+    desc_rep2 = ""
+    if rep2_correto == "Não":
+        desc_rep2 = st.text_input("Nº OC de Regularização *", placeholder="Ex: [ADMINISTRATIVO] ALT DIVERSAS-CLIENTE", key=f"desc_rep2_{rc}")
+    else:
+        st.write("")
+
 st.divider()
 
 
@@ -395,6 +406,9 @@ def validar_campos_texto():
     if not central_norma: campos_faltantes.append("Central dentro de norma?")
     if central_norma == "Não" and not desc_central_norma.strip(): campos_faltantes.append("Motivo da Central fora de norma (Pois marcou que não está)")
     
+    if not rep2_correto: campos_faltantes.append("Representante 2 está correto?")
+    if rep2_correto == "Não" and not desc_rep2.strip(): campos_faltantes.append("Nº OC de Regularização (Pois marcou 'Não' no Representante 2)")
+
     if not indica_negocios: campos_faltantes.append("Indicou novos negócios?")
     if not cliente_satisfeito: campos_faltantes.append("Cliente está satisfeito com a Consigaz?")
     
@@ -572,6 +586,10 @@ with col_btn2:
                 
             texto_eq_contrato = f"{eq_contrato}. {desc_eq_contrato.strip()}".strip() if desc_eq_contrato.strip() else eq_contrato
             
+            texto_rep2 = rep2_correto if rep2_correto else ""
+            if rep2_correto == "Não" and desc_rep2.strip():
+                texto_rep2 += f" - {desc_rep2.strip()}"
+
             texto_freq = tem_freq
             if tem_freq in ["Sim", "Não"] and desc_freq.strip():
                 texto_freq += f" - {desc_freq.strip()}"
@@ -606,6 +624,7 @@ Sobrenome ou departamento: {departamento}
 Telefone: {telefone}
 
 Equipamentos de acordo com o contrato vigente? {texto_eq_contrato}
+Representante 2 está correto? {texto_rep2}
 Possui programação cadastrada? {texto_freq}
 Consumo mensal atual de acordo com o contrato vigente? Consumo previsto: {consumo_previsto} kg | Consumo médio: {consumo_real} kg
 Laudo ART emitido? {linha_art}
