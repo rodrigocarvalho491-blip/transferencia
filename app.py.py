@@ -34,11 +34,20 @@ if "eq_key_counter" not in st.session_state:
 if "equipamentos" not in st.session_state:
     st.session_state.equipamentos = []
 
+# Memória para manter as opções selecionadas ao adicionar itens
+if "last_central" not in st.session_state:
+    st.session_state.last_central = "Central 01"
+
+if "last_tipo_cad" not in st.session_state:
+    st.session_state.last_tipo_cad = "Equipamentos"
+
 # Função MESTRE para limpar todos os dados e reiniciar o app
 def resetar_dados():
     st.session_state.reset_counter += 1
     st.session_state.eq_key_counter = 0
     st.session_state.equipamentos = []
+    st.session_state.last_central = "Central 01"
+    st.session_state.last_tipo_cad = "Equipamentos"
 
 rc = st.session_state.reset_counter
 ekc = st.session_state.eq_key_counter
@@ -207,20 +216,35 @@ st.divider()
 # --- SEÇÃO 3: CADASTRO DE INSTALAÇÃO ---
 st.subheader("3. Cadastro de Instalação")
 
-# Configuração de Múltiplas Centrais
+# Configuração de Múltiplas Centrais com Memória de Estado
 col_cent1, col_cent2 = st.columns(2)
 with col_cent1:
     qtd_centrais = st.number_input("Quantidade de Centrais no Cliente", min_value=1, value=1, step=1, key=f"qtd_centrais_{rc}")
 with col_cent2:
     if qtd_centrais > 1:
         opcoes_centrais = [f"Central {i:02d}" for i in range(1, int(qtd_centrais) + 1)]
-        central_selecionada = st.selectbox("Vincular item à qual Central?", opcoes_centrais, key=f"sel_central_{rc}_{ekc}")
+        
+        idx_central = 0
+        if st.session_state.last_central in opcoes_centrais:
+            idx_central = opcoes_centrais.index(st.session_state.last_central)
+            
+        central_selecionada = st.selectbox("Vincular item à qual Central?", opcoes_centrais, index=idx_central, key=f"sel_central_{rc}_{ekc}")
+        st.session_state.last_central = central_selecionada
     else:
         central_selecionada = "Central 01"
+        st.session_state.last_central = "Central 01"
         st.write("") 
 
 st.write("")
-tipo_cadastro = st.radio("Selecione o tipo que deseja adicionar:", ["Equipamentos", "Cilindros", "Apartamentos"], horizontal=True, key=f"tipo_cad_{rc}_{ekc}")
+
+# Memória para o Tipo de Cadastro
+opcoes_tipo = ["Equipamentos", "Cilindros", "Apartamentos"]
+idx_tipo = 0
+if st.session_state.last_tipo_cad in opcoes_tipo:
+    idx_tipo = opcoes_tipo.index(st.session_state.last_tipo_cad)
+    
+tipo_cadastro = st.radio("Selecione o tipo que deseja adicionar:", opcoes_tipo, index=idx_tipo, horizontal=True, key=f"tipo_cad_{rc}_{ekc}")
+st.session_state.last_tipo_cad = tipo_cadastro
 
 if tipo_cadastro == "Equipamentos":
     col_qtd, col_eq, col_vaz, col_btn = st.columns([1, 2, 2, 1])
