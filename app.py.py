@@ -131,7 +131,7 @@ st.divider()
 # --- SEÇÃO 2: INFORMAÇÕES CONTRATUAIS (Organizado Linha por Linha com Tab Lateral) ---
 st.subheader("2. Informações Contratuais")
 
-# Linha 1 (4 colunas)
+# Linha 1
 s2_l1_c1, s2_l1_c2, s2_l1_c3, s2_l1_c4 = st.columns(4)
 with s2_l1_c1:
     eq_contrato = st.selectbox("Equipamentos de acordo com contrato? *", ["Sim", "Não"], index=None, placeholder="Selecione", key=f"eq_contrato_{rc}")
@@ -207,6 +207,19 @@ st.divider()
 # --- SEÇÃO 3: CADASTRO DE INSTALAÇÃO ---
 st.subheader("3. Cadastro de Instalação")
 
+# Configuração de Múltiplas Centrais
+col_cent1, col_cent2 = st.columns(2)
+with col_cent1:
+    qtd_centrais = st.number_input("Quantidade de Centrais no Cliente", min_value=1, value=1, step=1, key=f"qtd_centrais_{rc}")
+with col_cent2:
+    if qtd_centrais > 1:
+        opcoes_centrais = [f"Central {i:02d}" for i in range(1, int(qtd_centrais) + 1)]
+        central_selecionada = st.selectbox("Vincular item à qual Central?", opcoes_centrais, key=f"sel_central_{rc}_{ekc}")
+    else:
+        central_selecionada = "Central 01"
+        st.write("") 
+
+st.write("")
 tipo_cadastro = st.radio("Selecione o tipo que deseja adicionar:", ["Equipamentos", "Cilindros", "Apartamentos"], horizontal=True, key=f"tipo_cad_{rc}_{ekc}")
 
 if tipo_cadastro == "Equipamentos":
@@ -231,6 +244,7 @@ if tipo_cadastro == "Equipamentos":
                     vazao_formatada = f"{vazao_total_item:.2f}".replace(".", ",").rstrip("0").rstrip(",")
     
                     item_dict = {
+                        "central": central_selecionada,
                         "tipo": "equipamento",
                         "qtd": qtd,
                         "nome": nome_eq_input.strip().title(),
@@ -240,7 +254,7 @@ if tipo_cadastro == "Equipamentos":
                     }
                     st.session_state.equipamentos.append(item_dict)
                     st.session_state.eq_key_counter += 1
-                    st.success("Adicionado!")
+                    st.success(f"Adicionado à {central_selecionada}!")
                     st.rerun()
                 except ValueError:
                     st.error("Informe um valor numérico válido para a vazão.")
@@ -262,6 +276,7 @@ elif tipo_cadastro == "Cilindros":
                 texto = f"{qtd:02d} und {modelo_input.strip().upper()}"
                 
                 item_dict = {
+                    "central": central_selecionada,
                     "tipo": "cilindro",
                     "qtd": qtd,
                     "nome": f"Cilindro {modelo_input.strip().upper()}",
@@ -271,7 +286,7 @@ elif tipo_cadastro == "Cilindros":
                 }
                 st.session_state.equipamentos.append(item_dict)
                 st.session_state.eq_key_counter += 1
-                st.success("Adicionado!")
+                st.success(f"Adicionado à {central_selecionada}!")
                 st.rerun()
             else:
                 st.warning("Preencha o modelo do cilindro.")
@@ -290,6 +305,7 @@ elif tipo_cadastro == "Apartamentos":
             texto = f"{qtd:02d} aps - {tipo_apt_input}"
             
             item_dict = {
+                "central": central_selecionada,
                 "tipo": "apartamento",
                 "qtd": qtd,
                 "nome": f"Apartamento ({tipo_apt_input})",
@@ -299,40 +315,47 @@ elif tipo_cadastro == "Apartamentos":
             }
             st.session_state.equipamentos.append(item_dict)
             st.session_state.eq_key_counter += 1
-            st.success("Adicionado!")
+            st.success(f"Adicionado à {central_selecionada}!")
             st.rerun()
 
+st.write("---")
 
-total_vazao = 0.0
 if st.session_state.equipamentos:
     st.write("**Lista de Itens Cadastrados:**")
     
-    for idx, item in enumerate(st.session_state.equipamentos):
-        total_vazao += item["vazao_total_item"]
+    # Agrupa e exibe os itens por Central
+    centrais_presentes = sorted(list(set([item.get("central", "Central 01") for item in st.session_state.equipamentos])))
+    
+    for central_nome in centrais_presentes:
+        st.markdown(f"**{central_nome.upper()}**")
+        vazao_central = 0.0
         
-        c_txt, c_del = st.columns([5, 1])
-        c_txt.text(item["texto"])
-        if c_del.button("❌", key=f"del_{idx}_{rc}"):
-            st.session_state.equipamentos.pop(idx)
-            st.rerun()
+        for idx, item in enumerate(st.session_state.equipamentos):
+            if item.get("central", "Central 01") == central_nome:
+                vazao_central += item["vazao_total_item"]
+                
+                c_txt, c_del = st.columns([5, 1])
+                c_txt.text(item["texto"])
+                if c_del.button("❌", key=f"del_{idx}_{rc}"):
+                    st.session_state.equipamentos.pop(idx)
+                    st.rerun()
 
-    vazao_total_str = f"{total_vazao:.2f}".replace(".", ",").rstrip("0").rstrip(",")
-    st.markdown(f"**VAZÃO TOTAL: {vazao_total_str} kg/h**")
+        vazao_str = f"{vazao_central:.2f}".replace(".", ",").rstrip("0").rstrip(",") if vazao_central > 0 else "0"
+        st.markdown(f"*Vazão Total {central_nome}: {vazao_str} kg/h*")
+        st.write("")
 
 st.divider()
 
 
-# --- SEÇÃO 4: NOVOS NEGÓCIOS / SATISFAÇÃO (Organizado Linha por Linha) ---
+# --- SEÇÃO 4: NOVOS NEGÓCIOS / SATISFAÇÃO ---
 st.subheader("4. Novos Negócios / Satisfação")
 
-# Linha 1
 s4_l1_c1, s4_l1_c2 = st.columns(2)
 with s4_l1_c1:
     indica_negocios = st.selectbox("Indicou novos negócios? *", ["Sim", "Não"], index=None, placeholder="Selecione", key=f"indica_negocios_{rc}")
 with s4_l1_c2:
     cliente_satisfeito = st.selectbox("Cliente está satisfeito com a Consigaz? *", ["Sim", "Não"], index=None, placeholder="Selecione", key=f"cliente_satisfeito_{rc}")
 
-# Linha 2
 s4_l2_c1, s4_l2_c2 = st.columns(2)
 with s4_l2_c1:
     desc_negocios = st.text_input("Detalhes da indicação", placeholder="Ex: Vizinho quer instalar gás", key=f"desc_negocios_{rc}")
@@ -349,23 +372,50 @@ observacoes = st.text_area("Digite as observações", placeholder="Ex: Cliente e
 st.divider()
 
 
-# --- SEÇÃO 6: RELATÓRIO FOTOGRÁFICO ---
+# --- SEÇÃO 6: RELATÓRIO FOTOGRÁFICO DINÂMICO ---
 def carregar_fotos(label, max_arquivos=None):
-    fotos = st.file_uploader(label, type=["png", "jpg", "jpeg"], accept_multiple_files=True, key=f"uploader_{label}_{rc}")
+    fotos = st.file_uploader(label, type=["png", "jpg", "jpeg"], accept_multiple_files=True, key=f"up_{label}_{rc}")
     if max_arquivos and fotos and len(fotos) > max_arquivos:
         st.error(f"⚠️ Limite excedido para {label}. Serão considerados apenas os primeiros {max_arquivos} arquivos.")
         return fotos[:max_arquivos]
     return fotos
 
 st.subheader("6. Relatório Fotográfico")
+
+# Dicionário dinâmico que armazenará todas as fotos
+dic_fotos_final = {}
+
 col_f1, col_f2 = st.columns(2)
 with col_f1:
-    fotos_fachada = carregar_fotos("FACHADA", max_arquivos=2)
-    fotos_central = carregar_fotos("CENTRAL", max_arquivos=5)
-    fotos_cilindros = carregar_fotos("CILINDROS", max_arquivos=5)
+    dic_fotos_final["FACHADA"] = carregar_fotos("FACHADA", max_arquivos=2)
 with col_f2:
-    fotos_abrigo = carregar_fotos("ABRIGO", max_arquivos=10)
-    fotos_equipamentos = carregar_fotos("EQUIPAMENTOS", max_arquivos=None)
+    dic_fotos_final["CILINDROS"] = carregar_fotos("CILINDROS", max_arquivos=5)
+
+st.write("---")
+
+# Renderização Dinâmica conforme a Quantidade de Centrais
+if qtd_centrais == 1:
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        dic_fotos_final["ABRIGO CENTRAL 01"] = carregar_fotos("ABRIGO CENTRAL 01", max_arquivos=10)
+    with c2:
+        dic_fotos_final["CENTRAL 01"] = carregar_fotos("CENTRAL 01", max_arquivos=5)
+    with c3:
+        dic_fotos_final["EQUIPAMENTOS CENTRAL 01"] = carregar_fotos("EQUIPAMENTOS CENTRAL 01", max_arquivos=None)
+else:
+    for i in range(1, int(qtd_centrais) + 1):
+        st.markdown(f"**📸 FOTOS - CENTRAL {i:02d}**")
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            nome_abrigo = f"ABRIGO CENTRAL {i:02d}"
+            dic_fotos_final[nome_abrigo] = carregar_fotos(nome_abrigo, max_arquivos=10)
+        with c2:
+            nome_central = f"CENTRAL {i:02d}"
+            dic_fotos_final[nome_central] = carregar_fotos(nome_central, max_arquivos=5)
+        with c3:
+            nome_equip = f"EQUIPAMENTOS CENTRAL {i:02d}"
+            dic_fotos_final[nome_equip] = carregar_fotos(nome_equip, max_arquivos=None)
+        st.write("")
 
 st.divider()
 
@@ -489,44 +539,51 @@ def gerar_pdf(equipamentos, dic_fotos, cod_cliente, nome_cliente):
                 except Exception as e:
                     pdf.cell(0, 6, f"Erro ao processar imagem: {e}", ln=1, align="L")
 
-    # Renderiza a Tabela de Equipamentos
+    # Renderiza a Tabela de Equipamentos Separada por Central
     if equipamentos:
         pdf.add_page()
         pdf.set_font("Arial", "B", 11)
         pdf.cell(0, 6, "LISTA DE ITENS E VAZÕES", ln=1, align="L")
         pdf.ln(2)
         
-        pdf.set_font("Arial", "B", 10)
-        pdf.set_fill_color(230, 230, 230)
-        pdf.cell(20, 7, "QTD", border=1, align="C", fill=True)
-        pdf.cell(120, 7, "ITEM / EQUIPAMENTO", border=1, align="C", fill=True)
-        pdf.cell(50, 7, "VAZÃO TOTAL", border=1, align="C", fill=True, ln=1)
+        centrais_presentes = sorted(list(set([item.get("central", "Central 01") for item in equipamentos])))
         
-        pdf.set_font("Arial", "", 10)
-        total_vazao_pdf = 0.0
-        for item in equipamentos:
-            total_vazao_pdf += item["vazao_total_item"]
+        for central_nome in centrais_presentes:
+            pdf.set_font("Arial", "B", 10)
+            pdf.cell(0, 6, central_nome.upper(), ln=1, align="L")
             
-            # Formatação elegante para cilindros e apartamentos na tabela de PDF
-            if item.get("tipo") in ["cilindro", "apartamento"]:
-                vazao_display = "-"
-            else:
-                vazao_item_str = f"{item['vazao_total_item']:.2f}".replace(".", ",").rstrip("0").rstrip(",")
-                if not vazao_item_str or vazao_item_str == ",":
-                    vazao_item_str = "0"
-                vazao_display = f"{vazao_item_str} kg/h"
+            pdf.set_fill_color(230, 230, 230)
+            pdf.cell(20, 7, "QTD", border=1, align="C", fill=True)
+            pdf.cell(120, 7, "ITEM / EQUIPAMENTO", border=1, align="C", fill=True)
+            pdf.cell(50, 7, "VAZÃO TOTAL", border=1, align="C", fill=True, ln=1)
             
-            pdf.cell(20, 6, f"{item['qtd']:02d}", border=1, align="C")
-            pdf.cell(120, 6, f"{item['nome']}", border=1, align="L")
-            pdf.cell(50, 6, vazao_display, border=1, align="C", ln=1)
-        
-        vazao_total_str = f"{total_vazao_pdf:.2f}".replace(".", ",").rstrip("0").rstrip(",")
-        if not vazao_total_str or vazao_total_str == ",":
-            vazao_total_str = "0"
+            pdf.set_font("Arial", "", 10)
+            total_vazao_pdf = 0.0
+            
+            for item in equipamentos:
+                if item.get("central", "Central 01") == central_nome:
+                    total_vazao_pdf += item["vazao_total_item"]
+                    
+                    if item.get("tipo") in ["cilindro", "apartamento"]:
+                        vazao_display = "-"
+                    else:
+                        vazao_item_str = f"{item['vazao_total_item']:.2f}".replace(".", ",").rstrip("0").rstrip(",")
+                        if not vazao_item_str or vazao_item_str == ",":
+                            vazao_item_str = "0"
+                        vazao_display = f"{vazao_item_str} kg/h"
+                    
+                    pdf.cell(20, 6, f"{item['qtd']:02d}", border=1, align="C")
+                    pdf.cell(120, 6, f"{item['nome']}", border=1, align="L")
+                    pdf.cell(50, 6, vazao_display, border=1, align="C", ln=1)
+            
+            vazao_total_str = f"{total_vazao_pdf:.2f}".replace(".", ",").rstrip("0").rstrip(",")
+            if not vazao_total_str or vazao_total_str == ",":
+                vazao_total_str = "0"
 
-        pdf.set_font("Arial", "B", 10)
-        pdf.cell(140, 7, "VAZÃO TOTAL:", border=1, align="R", fill=True)
-        pdf.cell(50, 7, f"{vazao_total_str} kg/h", border=1, align="C", fill=True, ln=1)
+            pdf.set_font("Arial", "B", 10)
+            pdf.cell(140, 7, f"VAZÃO TOTAL {central_nome.upper()}:", border=1, align="R", fill=True)
+            pdf.cell(50, 7, f"{vazao_total_str} kg/h", border=1, align="C", fill=True, ln=1)
+            pdf.ln(4)
 
     if pdf.page_no() == 0:
         pdf.add_page()
@@ -544,17 +601,9 @@ with col_btn1:
         if erros_pdf:
             st.error(f"⚠️ **Para o PDF, preencha pelo menos os seguintes campos:**\n\n" + "\n".join([f"- {erro}" for erro in erros_pdf]))
         else:
-            dicionario_fotos = {
-                "FACHADA": fotos_fachada,
-                "ABRIGO": fotos_abrigo,
-                "CENTRAL": fotos_central,
-                "CILINDROS": fotos_cilindros,
-                "EQUIPAMENTOS": fotos_equipamentos
-            }
-            
             pdf_out = gerar_pdf(
                 st.session_state.equipamentos,
-                dicionario_fotos,
+                dic_fotos_final,
                 cod_cliente,
                 nome_cliente
             )
@@ -610,14 +659,22 @@ with col_btn2:
             if desc_satisfacao.strip():
                 texto_satisfacao += f", {desc_satisfacao.strip()}"
                 
+            # Geração do texto das Centrais
             lista_eq_formatada = ""
             if st.session_state.equipamentos:
-                for eq in st.session_state.equipamentos:
-                    lista_eq_formatada += f"{eq['texto']}\n"
+                centrais_presentes = sorted(list(set([eq.get("central", "Central 01") for eq in st.session_state.equipamentos])))
+                for central_nome in centrais_presentes:
+                    lista_eq_formatada += f"Equipamentos {central_nome}\n"
+                    vazao_central = 0.0
+                    for eq in st.session_state.equipamentos:
+                        if eq.get("central", "Central 01") == central_nome:
+                            lista_eq_formatada += f"{eq['texto']}\n"
+                            vazao_central += eq["vazao_total_item"]
+                    
+                    vazao_str = f"{vazao_central:.2f}".replace(".", ",").rstrip("0").rstrip(",") if vazao_central > 0 else "0"
+                    lista_eq_formatada += f"\nTotal Vazão {central_nome}: {vazao_str} kg/h\n\n"
             else:
-                lista_eq_formatada = "Nenhum item cadastrado.\n"
-                
-            vazao_total_str = f"{total_vazao:.2f}".replace(".", ",").rstrip("0").rstrip(",") if total_vazao > 0 else "0"
+                lista_eq_formatada = "Nenhum item cadastrado.\n\n"
 
             texto_final = f"""Contato: {contato}
 Sobrenome ou departamento: {departamento}
@@ -632,9 +689,7 @@ Central atende as normas? {texto_central_norma}
 
 Quais equipamentos disponíveis no cliente?
 
-{lista_eq_formatada}VAZÃO TOTAL: {vazao_total_str} kg/h
-
-Indicação de novos negócios do cliente: {texto_negocios}
+{lista_eq_formatada}Indicação de novos negócios do cliente: {texto_negocios}
 Cliente possui débitos? {texto_debitos}
 Cliente está satisfeito com o atendimento da Consigaz? {texto_satisfacao}
 
