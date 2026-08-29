@@ -36,7 +36,7 @@ if "equipamentos" not in st.session_state:
 
 # Memória para manter as opções selecionadas ao adicionar itens
 if "last_central" not in st.session_state:
-    st.session_state.last_central = "Central 01"
+    st.session_state.last_central = "Central"
 
 if "last_tipo_cad" not in st.session_state:
     st.session_state.last_tipo_cad = "Equipamentos"
@@ -46,7 +46,7 @@ def resetar_dados():
     st.session_state.reset_counter += 1
     st.session_state.eq_key_counter = 0
     st.session_state.equipamentos = []
-    st.session_state.last_central = "Central 01"
+    st.session_state.last_central = "Central"
     st.session_state.last_tipo_cad = "Equipamentos"
 
 rc = st.session_state.reset_counter
@@ -231,8 +231,8 @@ with col_cent2:
         central_selecionada = st.selectbox("Vincular item à qual Central?", opcoes_centrais, index=idx_central, key=f"sel_central_{rc}_{ekc}")
         st.session_state.last_central = central_selecionada
     else:
-        central_selecionada = "Central 01"
-        st.session_state.last_central = "Central 01"
+        central_selecionada = "Central"
+        st.session_state.last_central = "Central"
         st.write("") 
 
 st.write("")
@@ -344,18 +344,22 @@ elif tipo_cadastro == "Apartamentos":
 
 st.write("---")
 
+# Função helper para garantir o nome "Central" se qtd_centrais == 1 (mesmo que tenham sido adicionados antes)
+def get_c_name(item, qtd):
+    return "Central" if qtd == 1 else item.get("central", "Central")
+
 if st.session_state.equipamentos:
     st.write("**Lista de Itens Cadastrados:**")
     
-    # Agrupa e exibe os itens por Central
-    centrais_presentes = sorted(list(set([item.get("central", "Central 01") for item in st.session_state.equipamentos])))
+    # Agrupa e exibe os itens por Central, sobrescrevendo o nome se for apenas 1
+    centrais_presentes = sorted(list(set([get_c_name(item, qtd_centrais) for item in st.session_state.equipamentos])))
     
     for central_nome in centrais_presentes:
         st.markdown(f"**{central_nome.upper()}**")
         vazao_central = 0.0
         
         for idx, item in enumerate(st.session_state.equipamentos):
-            if item.get("central", "Central 01") == central_nome:
+            if get_c_name(item, qtd_centrais) == central_nome:
                 vazao_central += item["vazao_total_item"]
                 
                 c_txt, c_del = st.columns([5, 1])
@@ -421,11 +425,11 @@ st.write("---")
 if qtd_centrais == 1:
     c1, c2, c3 = st.columns(3)
     with c1:
-        dic_fotos_final["ABRIGO CENTRAL 01"] = carregar_fotos("ABRIGO CENTRAL 01", max_arquivos=10)
+        dic_fotos_final["ABRIGO"] = carregar_fotos("ABRIGO", max_arquivos=10)
     with c2:
-        dic_fotos_final["CENTRAL 01"] = carregar_fotos("CENTRAL 01", max_arquivos=5)
+        dic_fotos_final["CENTRAL"] = carregar_fotos("CENTRAL", max_arquivos=5)
     with c3:
-        dic_fotos_final["EQUIPAMENTOS CENTRAL 01"] = carregar_fotos("EQUIPAMENTOS CENTRAL 01", max_arquivos=None)
+        dic_fotos_final["EQUIPAMENTOS"] = carregar_fotos("EQUIPAMENTOS", max_arquivos=None)
 else:
     for i in range(1, int(qtd_centrais) + 1):
         st.markdown(f"**📸 FOTOS - CENTRAL {i:02d}**")
@@ -447,14 +451,12 @@ st.divider()
 # --- SEÇÃO 7: AÇÕES E GERAÇÃO DE RELATÓRIO ---
 def validar_campos_pdf():
     campos_faltantes = []
-    # Para o PDF, a exigência é mínima (apenas Código e Nome)
     if not cod_cliente.strip(): campos_faltantes.append("Código do Cliente")
     if not nome_cliente.strip(): campos_faltantes.append("Nome / Razão Social")
     return campos_faltantes
 
 def validar_campos_texto():
     campos_faltantes = []
-    # Para o Texto do Sistema, as exigências de formulário continuam
     if not cod_cliente.strip(): campos_faltantes.append("Código do Cliente")
     if not contato.strip(): campos_faltantes.append("Contato")
     if not nome_cliente.strip(): campos_faltantes.append("Nome / Razão Social")
@@ -518,12 +520,12 @@ class RelatorioPDF(FPDF):
         self.set_font("Arial", "I", 8)
         self.cell(0, 10, f"Página {self.page_no()}", align="C")
 
-def gerar_pdf(equipamentos, dic_fotos, cod_cliente, nome_cliente):
+def gerar_pdf(equipamentos, dic_fotos, cod_cliente, nome_cliente, qty_centrais):
     pdf = RelatorioPDF(cod_cliente, nome_cliente)
     pdf.set_margins(10, 35, 10)
     pdf.set_auto_page_break(auto=True, margin=20)
 
-    # Renderiza as Fotos com Centralização Garantida
+    # Renderiza as Fotos
     for categoria, arquivos in dic_fotos.items():
         if arquivos:
             pdf.add_page()
@@ -570,7 +572,10 @@ def gerar_pdf(equipamentos, dic_fotos, cod_cliente, nome_cliente):
         pdf.cell(0, 6, "LISTA DE ITENS E VAZÕES", ln=1, align="L")
         pdf.ln(2)
         
-        centrais_presentes = sorted(list(set([item.get("central", "Central 01") for item in equipamentos])))
+        def get_c_name_pdf(item):
+            return "Central" if qty_centrais == 1 else item.get("central", "Central")
+            
+        centrais_presentes = sorted(list(set([get_c_name_pdf(item) for item in equipamentos])))
         
         for central_nome in centrais_presentes:
             pdf.set_font("Arial", "B", 10)
@@ -585,7 +590,7 @@ def gerar_pdf(equipamentos, dic_fotos, cod_cliente, nome_cliente):
             total_vazao_pdf = 0.0
             
             for item in equipamentos:
-                if item.get("central", "Central 01") == central_nome:
+                if get_c_name_pdf(item) == central_nome:
                     total_vazao_pdf += item["vazao_total_item"]
                     
                     if item.get("tipo") in ["cilindro", "apartamento"]:
@@ -629,7 +634,8 @@ with col_btn1:
                 st.session_state.equipamentos,
                 dic_fotos_final,
                 cod_cliente,
-                nome_cliente
+                nome_cliente,
+                qtd_centrais
             )
             
             cod_formatado = cod_cliente.replace(".", "").strip().upper() if cod_cliente else ""
@@ -683,15 +689,18 @@ with col_btn2:
             if desc_satisfacao.strip():
                 texto_satisfacao += f", {desc_satisfacao.strip()}"
                 
-            # Geração do texto das Centrais
+            # Geração do texto das Centrais com Trava de Inteligência
             lista_eq_formatada = ""
             if st.session_state.equipamentos:
-                centrais_presentes = sorted(list(set([eq.get("central", "Central 01") for eq in st.session_state.equipamentos])))
+                def get_c_name_txt(item):
+                    return "Central" if qtd_centrais == 1 else item.get("central", "Central")
+
+                centrais_presentes = sorted(list(set([get_c_name_txt(eq) for eq in st.session_state.equipamentos])))
                 for central_nome in centrais_presentes:
                     lista_eq_formatada += f"Equipamentos {central_nome}\n"
                     vazao_central = 0.0
                     for eq in st.session_state.equipamentos:
-                        if eq.get("central", "Central 01") == central_nome:
+                        if get_c_name_txt(eq) == central_nome:
                             lista_eq_formatada += f"{eq['texto']}\n"
                             vazao_central += eq["vazao_total_item"]
                     
