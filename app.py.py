@@ -233,10 +233,10 @@ if tipo_cadastro == "Equipamentos":
                     item_dict = {
                         "tipo": "equipamento",
                         "qtd": qtd,
-                        "nome": nome_eq_input.strip().upper(),
+                        "nome": nome_eq_input.strip().title(),
                         "vazao_unit": vazao_unit,
                         "vazao_total_item": vazao_total_item,
-                        "texto": f"{qtd:02d} - {nome_eq_input.strip().upper()} - {vazao_formatada} kg/h"
+                        "texto": f"{qtd:02d} - {nome_eq_input.strip().title()} - {vazao_formatada} kg/h"
                     }
                     st.session_state.equipamentos.append(item_dict)
                     st.session_state.eq_key_counter += 1
@@ -264,7 +264,7 @@ elif tipo_cadastro == "Cilindros":
                 item_dict = {
                     "tipo": "cilindro",
                     "qtd": qtd,
-                    "nome": f"CILINDRO {modelo_input.strip().upper()}",
+                    "nome": f"Cilindro {modelo_input.strip().upper()}",
                     "vazao_unit": 0.0,
                     "vazao_total_item": 0.0,
                     "texto": texto
@@ -292,7 +292,7 @@ elif tipo_cadastro == "Apartamentos":
             item_dict = {
                 "tipo": "apartamento",
                 "qtd": qtd,
-                "nome": f"APARTAMENTO ({tipo_apt_input.upper()})",
+                "nome": f"Apartamento ({tipo_apt_input})",
                 "vazao_unit": 0.0,
                 "vazao_total_item": 0.0,
                 "texto": texto
