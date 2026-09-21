@@ -341,7 +341,7 @@ elif tipo_cadastro == "Condomínio":
                 texto = f"{qtd:02d} aps - {tipo_apt_input}"
                 nome_item = f"Apartamentos ({tipo_apt_input})"
             else:
-                texto = f"{qtd:02d} eq - Área Comum ({tipo_apt_input})"
+                texto = f"{qtd:02d} - Área Comum ({tipo_apt_input})"
                 nome_item = f"Área Comum ({tipo_apt_input})"
             
             item_dict = {
