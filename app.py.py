@@ -238,7 +238,11 @@ with col_cent2:
 st.write("")
 
 # Memória para o Tipo de Cadastro
-opcoes_tipo = ["Equipamentos", "Cilindros", "Apartamentos"]
+opcoes_tipo = ["Equipamentos", "Cilindros", "Condomínio"]
+
+if st.session_state.last_tipo_cad == "Apartamentos":
+    st.session_state.last_tipo_cad = "Condomínio"
+
 idx_tipo = 0
 if st.session_state.last_tipo_cad in opcoes_tipo:
     idx_tipo = opcoes_tipo.index(st.session_state.last_tipo_cad)
@@ -315,26 +319,38 @@ elif tipo_cadastro == "Cilindros":
             else:
                 st.warning("Preencha o modelo do cilindro.")
 
-elif tipo_cadastro == "Apartamentos":
-    col_qtd, col_tipo, col_btn = st.columns([1, 4, 1])
+elif tipo_cadastro == "Condomínio":
+    col_local, col_qtd, col_tipo, col_btn = st.columns([2, 1, 3, 1])
+    with col_local:
+        local_input = st.selectbox("Local", ["Apartamentos", "Área Comum"], key=f"cond_local_{rc}_{ekc}")
     with col_qtd:
-        qtd_input = st.number_input("Qtd Apartamentos", min_value=1, value=1, step=1, key=f"apt_qtd_{rc}_{ekc}")
+        qtd_input = st.number_input("Qtd", min_value=1, value=1, step=1, key=f"cond_qtd_{rc}_{ekc}")
     with col_tipo:
-        tipo_apt_input = st.selectbox("Instalação", ["Só Fogão", "Fogão + Aquecedor"], key=f"apt_tipo_{rc}_{ekc}")
+        tipo_apt_input = st.selectbox("Instalação", ["Só Fogão", "Fogão + Aquecedor"], key=f"cond_tipo_{rc}_{ekc}")
         
     with col_btn:
         st.write(" "); st.write(" ")
-        if st.button("➕ Adicionar", key=f"btn_add_apt_{rc}_{ekc}"):
+        if st.button("➕ Adicionar", key=f"btn_add_cond_{rc}_{ekc}"):
             qtd = int(qtd_input)
-            texto = f"{qtd:02d} aps - {tipo_apt_input}"
+            
+            # Cálculo de vazão automático
+            vazao_unit = 0.1 if tipo_apt_input == "Só Fogão" else 0.4
+            vazao_total = vazao_unit * qtd
+            
+            if local_input == "Apartamentos":
+                texto = f"{qtd:02d} aps - {tipo_apt_input}"
+                nome_item = f"Apartamentos ({tipo_apt_input})"
+            else:
+                texto = f"{qtd:02d} eq - Área Comum ({tipo_apt_input})"
+                nome_item = f"Área Comum ({tipo_apt_input})"
             
             item_dict = {
                 "central": central_selecionada,
-                "tipo": "apartamento",
+                "tipo": "condominio",
                 "qtd": qtd,
-                "nome": f"Apartamento ({tipo_apt_input})",
-                "vazao_unit": 0.0,
-                "vazao_total_item": 0.0,
+                "nome": nome_item,
+                "vazao_unit": vazao_unit,
+                "vazao_total_item": vazao_total,
                 "texto": texto
             }
             st.session_state.equipamentos.append(item_dict)
@@ -593,7 +609,7 @@ def gerar_pdf(equipamentos, dic_fotos, cod_cliente, nome_cliente, qty_centrais):
                 if get_c_name_pdf(item) == central_nome:
                     total_vazao_pdf += item["vazao_total_item"]
                     
-                    if item.get("tipo") in ["cilindro", "apartamento"]:
+                    if item.get("tipo") == "cilindro":
                         vazao_display = "-"
                     else:
                         vazao_item_str = f"{item['vazao_total_item']:.2f}".replace(".", ",").rstrip("0").rstrip(",")
